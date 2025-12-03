@@ -1,14 +1,13 @@
 import { Router } from "express";
-import { z } from "zod";
+import { register } from "../controllers/auth/register.controller";
+import { login } from "../controllers/auth/login.controller";
 
 const router = Router();
 
-// POST /api/auth - Register a new user
-router.post("/register", (req, res) => {
-  res.json({
-    message: "Register a new user",
-    data: req.body,
-  });
-});
+// POST /api/auth/register - Register a new user
+router.post("/register", register);
+
+// POST /api/auth/login - Login user
+router.post("/login", login);
 
 export default router;

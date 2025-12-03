@@ -14,12 +14,17 @@ export class UserRepositoryImpl {
     return result.length > 0 ? result[0] : null;
   }
 
-  async createUser(email: string, passwordHash: string): Promise<User> {
+  async createUser(
+    email: string,
+    passwordHash: string,
+    username: string
+  ): Promise<User> {
     const result = await db
       .insert(users)
       .values({
         email: email,
         passwordHash: passwordHash,
+        username: username,
       })
       .returning();
 

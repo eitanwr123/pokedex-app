@@ -8,6 +8,13 @@
       "when": 1764744558042,
       "tag": "0000_famous_stepford_cuckoos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764797628440,
+      "tag": "0001_flashy_nightshade",
+      "breakpoints": true
     }
   ]
 }
