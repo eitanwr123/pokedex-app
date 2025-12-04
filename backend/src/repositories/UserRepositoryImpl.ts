@@ -22,9 +22,9 @@ export class UserRepositoryImpl {
     const result = await db
       .insert(users)
       .values({
-        email: email,
-        passwordHash: passwordHash,
-        username: username,
+        email,
+        passwordHash,
+        username,
       })
       .returning();
 

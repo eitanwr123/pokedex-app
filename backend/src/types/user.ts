@@ -1,6 +1,3 @@
-export interface User {
-  id: string;
-  email: string;
-  passwordHash: string;
-  createdAt: Date;
-}
+import { User } from "../db/schema";
+
+export type PublicUser = Pick<User, "id" | "email" | "username">;

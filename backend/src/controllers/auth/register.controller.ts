@@ -16,7 +16,7 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(400).json({ errors: error.message });
+      return res.status(400).json({ errors: error.issues });
     }
 
     if (error instanceof Error && error.message === "User already exists") {
