@@ -1,47 +1,22 @@
 import { Router } from "express";
+import { authMiddleware } from "../middleware/auth";
+import { getAllPokemon } from "../controllers/pokemon/getAllPokemon.controller";
 
 const router = Router();
 
 // GET /api/pokemon - Get all Pokemon
-router.get("/", (req, res) => {
-  res.json({
-    message: "Get all Pokemon",
-    data: [], // This will be populated later
-  });
-});
+router.get("/", authMiddleware, getAllPokemon);
 
 // GET /api/pokemon/:id - Get Pokemon by ID
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  res.json({
-    message: `Get Pokemon with ID: ${id}`,
-    data: null, // This will be populated later
-  });
-});
+// router.get("/:id", authMiddleware, getPokemonById);
 
 // POST /api/pokemon - Create new Pokemon
-router.post("/", (req, res) => {
-  res.json({
-    message: "Create new Pokemon",
-    data: req.body,
-  });
-});
+// router.post("/", authMiddleware, createPokemon);
 
 // PUT /api/pokemon/:id - Update Pokemon
-router.put("/:id", (req, res) => {
-  const { id } = req.params;
-  res.json({
-    message: `Update Pokemon with ID: ${id}`,
-    data: req.body,
-  });
-});
+// router.put("/:id", authMiddleware, updatePokemon);
 
 // DELETE /api/pokemon/:id - Delete Pokemon
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-  res.json({
-    message: `Delete Pokemon with ID: ${id}`,
-  });
-});
+// router.delete("/:id", authMiddleware, deletePokemon);
 
 export default router;
