@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../db/client";
 import { pokemon } from "../db/schema";
 import * as fs from "fs";
@@ -20,18 +21,18 @@ async function seedPokemon() {
 
     for (const poke of pokemonData) {
       await db.insert(pokemon).values({
-        name: poke.name,
-        pokedexNumber: poke.id || poke.pokedexNumber,
-        types: poke.types,
-        sprites: poke.sprites,
-        stats: poke.stats,
-        abilities: poke.abilities,
-        height: poke.height,
-        weight: poke.weight,
+        name: poke.name.english,
+        pokedexNumber: poke.id,
+        types: poke.type || null,
+        sprites: poke.image || null,
+        stats: poke.base || null,
+        abilities: poke.profile?.ability || null,
+        height: poke.profile?.height ? parseInt(poke.profile.height) : null,
+        weight: poke.profile?.weight ? parseInt(poke.profile.weight) : null,
         data: poke,
       });
 
-      console.log(`Seeded: ${poke.name}`);
+      console.log(`Seeded: ${poke.name.english}`);
     }
 
     console.log("Pokemon seeding completed!");

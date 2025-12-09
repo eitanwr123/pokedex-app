@@ -1,5 +1,5 @@
 import { db } from "../db/client";
-import { pokemon } from "../db/schema";
+import { pokemon, userPokemon } from "../db/schema";
 import { Pokemon } from "../db/schema";
 import { count, eq } from "drizzle-orm";
 
@@ -20,10 +20,7 @@ export class PokemonRepositoryImpl {
   }
 
   async findPokemonById(id: number): Promise<Pokemon | undefined> {
-    const result = await db
-      .select()
-      .from(pokemon)
-      .where(eq(pokemon.id, id));
+    const result = await db.select().from(pokemon).where(eq(pokemon.id, id));
     return result[0];
   }
 
@@ -35,5 +32,15 @@ export class PokemonRepositoryImpl {
       .from(pokemon)
       .where(eq(pokemon.pokedexNumber, pokedexNumber));
     return result[0];
+  }
+
+  //find pokemon collection by user id
+  async findPokemonByUserId(userId: number): Promise<Pokemon[]> {
+    const result = await db
+      .select()
+      .from(userPokemon)
+      .innerJoin(pokemon, eq(userPokemon.pokemonId, pokemon.id))
+      .where(eq(userPokemon.userId, userId));
+    return result.map((r) => ({ ...r.pokemon }));
   }
 }

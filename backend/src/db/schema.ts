@@ -14,9 +14,9 @@ export const pokemon = pgTable("pokemon", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   pokedexNumber: integer("pokedex_number").notNull().unique(),
-  types: jsonb("types").notNull(), // ["grass", "poison"]
-  sprites: jsonb("sprites").notNull(), // { front_default: "url", ... }
-  stats: jsonb("stats").notNull(), // { hp: 45, attack: 49, ... }
+  types: jsonb("types"), // ["grass", "poison"]
+  sprites: jsonb("sprites"), // { front_default: "url", ... }
+  stats: jsonb("stats"), // { hp: 45, attack: 49, ... }
   abilities: jsonb("abilities"), // [{ name: "overgrow", ... }]
   height: integer("height"), // in decimeters
   weight: integer("weight"), // in hectograms

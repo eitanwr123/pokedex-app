@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",
+    "migrate": "ts-node src/scripts/runMigrations.ts",
     "seed:pokemon": "ts-node src/scripts/seedPokemon.ts"
   },
   "keywords": [],

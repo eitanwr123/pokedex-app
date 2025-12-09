@@ -15,6 +15,20 @@
       "when": 1764797628440,
       "tag": "0001_flashy_nightshade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1765260949739,
+      "tag": "0002_aromatic_layla_miller",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765261852293,
+      "tag": "0003_petite_overlord",
+      "breakpoints": true
     }
   ]
 }
