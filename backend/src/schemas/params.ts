@@ -9,3 +9,9 @@ export const idParamSchema = z.object({
       message: "ID must be a positive number",
     }),
 });
+
+export const catchReleasePokemonParamSchema = z.object({
+  pokemonId: z.number().int().positive({
+    message: "Pokemon ID must be a positive integer",
+  }),
+});
