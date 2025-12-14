@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "../db/client";
-import { pokemon } from "../db/schema";
+import { pokemon, PokemonEvolution } from "../db/schema";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -20,6 +20,15 @@ async function seedPokemon() {
     console.log(`Found ${pokemonData.length} Pokemon to seed...`);
 
     for (const poke of pokemonData) {
+      // Process evolution data
+      let evolutionData: PokemonEvolution | null = null;
+      if (poke.evolution) {
+        evolutionData = {
+          prev: poke.evolution.prev || null,
+          next: poke.evolution.next || null,
+        };
+      }
+
       await db.insert(pokemon).values({
         name: poke.name.english,
         pokedexNumber: poke.id,
@@ -29,6 +38,7 @@ async function seedPokemon() {
         abilities: poke.profile?.ability || null,
         height: poke.profile?.height ? parseInt(poke.profile.height) : null,
         weight: poke.profile?.weight ? parseInt(poke.profile.weight) : null,
+        evolution: evolutionData,
         data: poke,
       });
 

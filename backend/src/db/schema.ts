@@ -1,6 +1,7 @@
 // src/db/schema.ts
 import { pgTable, serial, varchar, timestamp, integer, jsonb, primaryKey } from "drizzle-orm/pg-core";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -20,6 +21,7 @@ export const pokemon = pgTable("pokemon", {
   abilities: jsonb("abilities"), // [{ name: "overgrow", ... }]
   height: integer("height"), // in decimeters
   weight: integer("weight"), // in hectograms
+  evolution: jsonb("evolution"), // { evolvesFrom: {...}, evolvesTo: [{method, level, ...}] }
   data: jsonb("data"), // Store full Pokemon data from JSON
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -38,3 +40,15 @@ export type Pokemon = InferSelectModel<typeof pokemon>;
 export type NewPokemon = InferInsertModel<typeof pokemon>;
 export type UserPokemon = InferSelectModel<typeof userPokemon>;
 export type NewUserPokemon = InferInsertModel<typeof userPokemon>;
+
+// Evolution data structure
+export interface PokemonEvolution {
+  prev?: [string, string] | null; // [pokemonId, evolutionMethod] e.g., ["1", "Level 16"]
+  next?: [string, string][] | null; // Array of [pokemonId, evolutionMethod] e.g., [["3", "Level 32"]]
+}
+
+// Zod schema for PokemonEvolution validation
+export const PokemonEvolutionSchema = z.object({
+  prev: z.tuple([z.string(), z.string()]).nullable().optional(),
+  next: z.array(z.tuple([z.string(), z.string()])).nullable().optional(),
+});
