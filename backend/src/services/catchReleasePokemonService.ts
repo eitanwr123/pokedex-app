@@ -1,6 +1,7 @@
-import { log } from "console";
-import { NewUserPokemon, Pokemon } from "../db/schema";
+import { NewUserPokemon } from "../db/schema";
 import { userPokemonRepositorylmpl } from "../repositories/userPokemonRepositorylmpl";
+import { getAllPreEvolutions } from "../utils/getAllPreEvolutions";
+import { PokemonRepositoryImpl } from "../repositories/PokemonRepositoryImpl";
 
 export async function catchReleasePokemonService(
   userId: number,
@@ -18,6 +19,24 @@ export async function catchReleasePokemonService(
     (p) => p.pokemonId === pokemonId
   );
 
+  //check for pre evolutions
+  const pokemonRepo = new PokemonRepositoryImpl();
+  const preEvolutionsIds = await getAllPreEvolutions(pokemonId, (id) =>
+    pokemonRepo.findPokemonById(id)
+  );
+
+  // Build list of pokemon to catch/release (including pre-evolutions)
+  let userPokemons: NewUserPokemon[];
+  if (preEvolutionsIds.length > 0) {
+    userPokemons = preEvolutionsIds
+      .filter((id) => !userCollection.find((p) => p.pokemonId === id))
+      .map((id) => ({ userId, pokemonId: id }));
+    //add the original pokemon to the list
+    userPokemons.push(userPokemon);
+  } else {
+    userPokemons = [userPokemon];
+  }
+
   if (pokemonInCollection) {
     result = await userPokemonRepository.removePokemonFromUserCollection(
       userPokemon
@@ -28,7 +47,7 @@ export async function catchReleasePokemonService(
     console.log(`pokemon ${pokemonId} released`);
   } else {
     result = await userPokemonRepository.addPokemonToUserCollection(
-      userPokemon
+      userPokemons
     );
     if (result.length === 0) {
       throw new Error("Failed to catch Pokemon to collection");

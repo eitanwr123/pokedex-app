@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
 import { NewUserPokemon, UserPokemon, userPokemon } from "../db/schema";
 
@@ -19,20 +19,32 @@ export class userPokemonRepositorylmpl {
   }
 
   async addPokemonToUserCollection(
-    NewUserPokemon: NewUserPokemon
+    input: NewUserPokemon | NewUserPokemon[]
   ): Promise<NewUserPokemon[]> {
-    return await db.insert(userPokemon).values(NewUserPokemon).returning();
+    const pokemons = Array.isArray(input) ? input : [input];
+    if (pokemons.length === 0) {
+      return [];
+    }
+    return await db.insert(userPokemon).values(pokemons).returning();
   }
 
   async removePokemonFromUserCollection(
-    NewUserPokemon: NewUserPokemon
+    input: NewUserPokemon | NewUserPokemon[]
   ): Promise<NewUserPokemon[]> {
+    const pokemons = Array.isArray(input) ? input : [input];
+    if (pokemons.length === 0) {
+      return [];
+    }
+
     return await db
       .delete(userPokemon)
       .where(
         and(
-          eq(userPokemon.userId, NewUserPokemon.userId),
-          eq(userPokemon.pokemonId, NewUserPokemon.pokemonId)
+          eq(userPokemon.userId, pokemons[0].userId),
+          inArray(
+            userPokemon.pokemonId,
+            pokemons.map((p) => p.pokemonId)
+          )
         )
       )
       .returning();

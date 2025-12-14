@@ -19,9 +19,9 @@ export class PokemonRepositoryImpl {
     };
   }
 
-  async findPokemonById(id: number): Promise<Pokemon | undefined> {
+  async findPokemonById(id: number): Promise<Pokemon | null> {
     const result = await db.select().from(pokemon).where(eq(pokemon.id, id));
-    return result[0];
+    return result[0] ?? null;
   }
 
   async findPokemonByPokedexNumber(
