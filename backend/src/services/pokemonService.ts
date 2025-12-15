@@ -12,7 +12,11 @@ export const getAllPokemonService = async (
 
   const { pokemon, total } = await pokemonRepository.findAllPokemon(
     offset,
-    query.limit
+    query.limit,
+    query.type,
+    query.name,
+    query.evolutionTier,
+    query.description
   );
 
   const totalPages = Math.ceil(total / query.limit);
