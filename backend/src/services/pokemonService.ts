@@ -1,31 +1,35 @@
 import { PokemonRepositoryImpl } from "../repositories/PokemonRepositoryImpl";
 import { PaginatedResponse } from "../schemas/pagination";
 import { Pokemon } from "../db/schema";
+import { PokemonQuery } from "../schemas/filterSchema";
 
 export const getAllPokemonService = async (
-  page: number,
-  limit: number
+  query: PokemonQuery
 ): Promise<PaginatedResponse<Pokemon>> => {
   const pokemonRepository = new PokemonRepositoryImpl();
 
-  const offset = (page - 1) * limit;
+  const offset = (query.page - 1) * query.limit;
 
   const { pokemon, total } = await pokemonRepository.findAllPokemon(
     offset,
-    limit
+    query.limit,
+    query.type,
+    query.name,
+    query.evolutionTier,
+    query.description
   );
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.ceil(total / query.limit);
 
   return {
     data: pokemon,
     pagination: {
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       total,
       totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
+      hasNextPage: query.page < totalPages,
+      hasPreviousPage: query.page > 1,
     },
   };
 };

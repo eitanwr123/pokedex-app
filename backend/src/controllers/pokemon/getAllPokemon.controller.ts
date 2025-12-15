@@ -1,16 +1,13 @@
 import { Request, Response } from "express";
-import { paginationSchema } from "../../schemas/pagination";
 import { getAllPokemonService } from "../../services/pokemonService";
-import { ZodError, z } from "zod";
+import { ZodError } from "zod";
+import { pokemonQuerySchema } from "../../schemas/filterSchema";
 
 export const getAllPokemon = async (req: Request, res: Response) => {
   try {
-    const validatedParams = paginationSchema.parse(req.query);
+    const validatedParams = pokemonQuerySchema.parse(req.query);
 
-    const result = await getAllPokemonService(
-      validatedParams.page,
-      validatedParams.limit
-    );
+    const result = await getAllPokemonService(validatedParams);
 
     res.status(200).json(result);
   } catch (error) {

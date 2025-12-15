@@ -1,22 +1,74 @@
 import { db } from "../db/client";
 import { pokemon, userPokemon } from "../db/schema";
 import { Pokemon } from "../db/schema";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, ilike, SQL, sql } from "drizzle-orm";
 
 export class PokemonRepositoryImpl {
   async findAllPokemon(
     offset: number,
-    limit: number
+    limit: number,
+    type?: string,
+    name?: string,
+    evolutionTier?: number,
+    description?: string
   ): Promise<{ pokemon: Pokemon[]; total: number }> {
+    const whereClause = this.buildWhereClause(
+      type,
+      name,
+      evolutionTier,
+      description
+    );
+
     const [pokemonList, totalCount] = await Promise.all([
-      db.select().from(pokemon).limit(limit).offset(offset),
-      db.select({ count: count() }).from(pokemon),
+      db.select().from(pokemon).where(whereClause).limit(limit).offset(offset),
+      db.select({ count: count() }).from(pokemon).where(whereClause),
     ]);
 
     return {
       pokemon: pokemonList,
       total: totalCount[0].count,
     };
+  }
+
+  private buildWhereClause(
+    type?: string,
+    name?: string,
+    evolutionTier?: number,
+    description?: string
+  ): SQL | undefined {
+    const conditions: SQL[] = [];
+
+    if (name) {
+      conditions.push(ilike(pokemon.name, `%${name}%`));
+    }
+
+    if (type) {
+      conditions.push(
+        sql`${pokemon.types}::jsonb @> ${JSON.stringify([type])}`
+      );
+    }
+
+    if (description) {
+      conditions.push(
+        sql`${pokemon.data}->>'description' ILIKE ${`%${description}%`}`
+      );
+    }
+
+    if (evolutionTier !== undefined) {
+      if (evolutionTier === 1) {
+        conditions.push(sql`${pokemon.evolution}->>'prev' IS NULL`);
+      } else if (evolutionTier === 2) {
+        conditions.push(
+          sql`${pokemon.evolution}->>'prev' IS NOT NULL AND ${pokemon.evolution}->>'next' IS NOT NULL`
+        );
+      } else if (evolutionTier === 3) {
+        conditions.push(
+          sql`${pokemon.evolution}->>'prev' IS NOT NULL AND ${pokemon.evolution}->>'next' IS NULL`
+        );
+      }
+    }
+
+    return conditions.length > 0 ? and(...conditions) : undefined;
   }
 
   async findPokemonById(id: number): Promise<Pokemon | null> {
