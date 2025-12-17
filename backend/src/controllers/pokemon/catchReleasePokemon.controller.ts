@@ -14,20 +14,27 @@ export const catchReleasePokemonController = async (
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({ error: "Unauthorized" });
+      res.status(401).json({
+        error: "Unauthorized",
+        message: "User authentication required",
+      });
       return;
     }
 
     const result = await catchReleasePokemonService(userId, pokemonId);
     if (!result) {
-      res.status(404).json({ error: "Pokemon not found" });
+      res.status(404).json({
+        error: "PokemonNotFound",
+        message: "Pokemon not found",
+      });
       return;
     }
     res.status(200).json({ message: result });
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({
-        error: "Validation error",
+        error: "ValidationError",
+        message: "Validation error",
         details: error.issues.map((err) => ({
           field: err.path.join("."),
           message: err.message,
@@ -35,6 +42,9 @@ export const catchReleasePokemonController = async (
       });
       return;
     }
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({
+      error: "InternalServerError",
+      message: "Internal server error",
+    });
   }
 };

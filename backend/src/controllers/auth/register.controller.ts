@@ -16,14 +16,27 @@ export const register = async (req: Request, res: Response) => {
     });
   } catch (error) {
     if (error instanceof ZodError) {
-      return res.status(400).json({ errors: error.issues });
+      return res.status(400).json({
+        error: "ValidationError",
+        message: "Validation error",
+        details: error.issues.map((err) => ({
+          field: err.path.join("."),
+          message: err.message,
+        })),
+      });
     }
 
     if (error instanceof Error && error.message === "User already exists") {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({
+        error: "UserAlreadyExists",
+        message: "User already exists",
+      });
     }
 
     console.error("Registration error:", error);
-    res.status(500).json({ message: "Registration failed" });
+    res.status(500).json({
+      error: "InternalServerError",
+      message: "Registration failed",
+    });
   }
 };

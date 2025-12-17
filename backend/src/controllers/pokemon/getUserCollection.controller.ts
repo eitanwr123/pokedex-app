@@ -6,15 +6,24 @@ const getUserCollection = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({
+        error: "Unauthorized",
+        message: "User authentication required",
+      });
     }
 
     const userCollection = await getUserCollectionService(userId);
     return res.status(200).json({ collection: userCollection });
   } catch (error) {
     return error instanceof Error
-      ? res.status(400).json({ error: error.message })
-      : res.status(500).json({ error: "Internal Server Error" });
+      ? res.status(400).json({
+          error: "BadRequest",
+          message: error.message,
+        })
+      : res.status(500).json({
+          error: "InternalServerError",
+          message: "Internal server error",
+        });
   }
 };
 
