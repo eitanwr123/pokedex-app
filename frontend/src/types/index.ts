@@ -8,5 +8,6 @@
  * This is called the "Barrel Export" pattern.
  */
 
-export * from './pokemon';
-export * from './auth';
+export * from "./pokemon";
+export * from "./auth";
+export * from "./pagination";

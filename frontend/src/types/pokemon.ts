@@ -5,6 +5,8 @@
  * Always keep them in sync with the API response!
  */
 
+import type { PaginatedResponse } from "./pagination";
+
 // Evolution data structure
 export interface PokemonEvolution {
   prev?: [string, string] | null; // [pokemonId, evolutionMethod]
@@ -51,14 +53,7 @@ export interface UserPokemon {
 }
 
 // API Response Types
-export interface PokemonListResponse {
-  pokemon: Pokemon[];
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-  };
-}
+export type PokemonListResponse = PaginatedResponse<Pokemon>;
 
 export interface UserCollectionResponse {
   collection: UserPokemon[];
