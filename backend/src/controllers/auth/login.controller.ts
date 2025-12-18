@@ -1,4 +1,3 @@
-//controller for login
 import { ZodError } from "zod";
 import { loginSchema } from "../../schemas/login";
 import { loginUser } from "../../services/authService";

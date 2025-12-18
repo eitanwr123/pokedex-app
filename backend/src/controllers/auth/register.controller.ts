@@ -3,7 +3,6 @@ import { registrationSchema } from "../../schemas/registration";
 import { registerUser } from "../../services/authService";
 import { Request, Response } from "express";
 
-// src/controllers/auth.controller.ts
 export const register = async (req: Request, res: Response) => {
   try {
     const validatedData = registrationSchema.parse(req.body);
