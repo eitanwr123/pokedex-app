@@ -1,19 +1,10 @@
-/**
- * Pokemon Types
- *
- * These types mirror the backend database schema.
- * Always keep them in sync with the API response!
- */
-
 import type { PaginatedResponse } from "./pagination";
 
-// Evolution data structure
 export interface PokemonEvolution {
   prev?: [string, string] | null; // [pokemonId, evolutionMethod]
   next?: [string, string][] | null; // Array of [pokemonId, evolutionMethod]
 }
 
-// Main Pokemon interface (matches backend schema)
 export interface Pokemon {
   id: number;
   name: string;
@@ -44,15 +35,13 @@ export interface Pokemon {
   createdAt: string;
 }
 
-// User's caught Pokemon (from /api/me/collection)
 export interface UserPokemon {
   userId: number;
   pokemonId: number;
   caughtAt: string;
-  pokemon?: Pokemon; // The API might populate this
+  pokemon?: Pokemon;
 }
 
-// API Response Types
 export type PokemonListResponse = PaginatedResponse<Pokemon>;
 
 export interface UserCollectionResponse {

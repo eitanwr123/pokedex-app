@@ -2,7 +2,7 @@ import { useState } from "react";
 
 interface PokemonCardProps {
   name: string;
-  type: string;
+  type: string[];
   onCatch: () => void;
   onRelease: () => void;
 }
@@ -24,7 +24,7 @@ function PokemonCard({ name, type, onCatch, onRelease }: PokemonCardProps) {
     <div style={cardStyle}>
       <h2>{name}</h2>
 
-      <p>Type: {type}</p>
+      <p>Type: {[...type].join(", ")}</p>
 
       <p>Status: {isCaught ? "✅ Caught" : "❌ Not Caught"}</p>
 
@@ -35,14 +35,6 @@ function PokemonCard({ name, type, onCatch, onRelease }: PokemonCardProps) {
   );
 }
 
-/**
- * CSS Styles as JavaScript Objects
- *
- * NOTES:
- * - Property names use camelCase (backgroundColor, not background-color)
- * - Values are strings ("16px", "#ddd")
- * - This is called "inline styles" - fine for learning, but CSS files are better for real apps
- */
 const cardStyle = {
   border: "1px solid #ddd",
   borderRadius: "8px",
@@ -64,10 +56,4 @@ const buttonStyle = {
   fontWeight: "bold",
 };
 
-/**
- * Export the component
- *
- * "default" export means other files can import it as:
- * import PokemonCard from "./components/PokemonCard"
- */
 export default PokemonCard;

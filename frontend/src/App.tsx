@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getAllPokemon } from "./services/pokemonService";
+import type { Pokemon } from "./types";
 import PokemonCard from "./components/PokemonCard";
 
 function App() {
   const [caughtCount, setCaughtCount] = useState(0);
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
 
-  const pokemonList = [
-    { name: "Bulbasaur", type: "Grass/Poison" },
-    { name: "Charmander", type: "Fire" },
-    { name: "Squirtle", type: "Water" },
-  ];
+  useEffect(() => {
+    // Fetch the list of Pokemon from the API
+    const fetchAllPokemon = async () => {
+      const response = await getAllPokemon();
+      setPokemonList(response.data);
+    };
+    fetchAllPokemon();
+  }, []);
 
   const handleCatch = () => {
     setCaughtCount(caughtCount + 1);
@@ -31,7 +37,7 @@ function App() {
         <PokemonCard
           key={pokemon.name}
           name={pokemon.name}
-          type={pokemon.type}
+          type={pokemon.types}
           onCatch={handleCatch}
           onRelease={handleRelease}
         />
