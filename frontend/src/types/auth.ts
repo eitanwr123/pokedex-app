@@ -11,7 +11,9 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  user: User;
+  id: number;
+  email: string;
+  username: string;
   token: string;
 }
 
@@ -21,9 +23,18 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface PublicUser {
+  id: number;
+  email: string;
+  username: string;
+}
+
 export interface RegisterResponse {
-  user: User;
-  token: string;
+  publicUser: {
+    id: number;
+    email: string;
+    username: string;
+  };
 }
 
 export interface ApiError {
