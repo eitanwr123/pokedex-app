@@ -1,4 +1,4 @@
-import type { LoginRequest, LoginResponse, PublicUser } from "../types";
+import type { LoginRequest, PublicUser } from "../types";
 import { apiClient } from "./api";
 
 export async function login(credentials: LoginRequest): Promise<PublicUser> {

@@ -1,19 +1,21 @@
 import { Route, Routes } from "react-router-dom";
-import PokedexPage from "./pages/PokedexPage";
 import LoginPage from "./pages/LoginPage";
+import PokedexListPage from "./pages/PokedexListPage";
+import MyCollectionPage from "./pages/MyCollectionPage";
+import Navbar from "./components/Navbar";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <div className="text-4xl font-bold text-blue-600 mb-4">Home Page</div>
-        }
-      />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/pokedex" element={<PokedexPage />} />
-    </Routes>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/LoginPage" element={<LoginPage />} />
+        <Route path="/Pokedex" element={<PokedexListPage />} />
+        <Route path="/MyCollection" element={<MyCollectionPage />} />
+      </Routes>
+    </>
   );
 }
 
