@@ -1,19 +1,57 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import PokedexListPage from "./pages/PokedexListPage";
 import MyCollectionPage from "./pages/MyCollectionPage";
 import Navbar from "./components/Navbar";
-import HomePage from "./pages/HomePage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import { useAuth } from "./contexts/AuthContext";
 
 function App() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/LoginPage" element={<LoginPage />} />
-        <Route path="/Pokedex" element={<PokedexListPage />} />
-        <Route path="/MyCollection" element={<MyCollectionPage />} />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/pokedex" replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/pokedex"
+          element={
+            <ProtectedRoute>
+              <PokedexListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-collection"
+          element={
+            <ProtectedRoute>
+              <MyCollectionPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

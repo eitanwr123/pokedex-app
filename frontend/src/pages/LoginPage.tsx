@@ -1,33 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import type { LoginRequest } from "../types";
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login, isLoggingIn, loginError, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/pokedex");
+    }
+  }, [isAuthenticated]);
 
   const onSubmit = async () => {
-    try {
-      setError(null);
-      await login(formData);
-      console.log("Logged in successfully");
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-      console.error("Login failed:", err);
-    }
+    await login(formData);
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Login Page</h1>
 
-      {error && (
+      {loginError && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+          {loginError.message}
         </div>
       )}
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            disabled={isLoading}
+            disabled={isLoggingIn}
           />
         </div>
         <div>
@@ -61,15 +61,15 @@ export default function LoginPage() {
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
-            disabled={isLoading}
+            disabled={isLoggingIn}
           />
         </div>
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
           type="submit"
-          disabled={isLoading}
+          disabled={isLoggingIn}
         >
-          {isLoading ? "Logging in..." : "Login"}
+          {isLoggingIn ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>

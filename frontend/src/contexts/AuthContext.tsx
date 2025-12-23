@@ -11,6 +11,8 @@ interface AuthContextType {
   error: Error | null;
   login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
+  isLoggingIn: boolean;
+  loginError: Error | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -87,6 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error: error as Error | null,
     login,
     logout,
+    isLoggingIn: loginMutation.isPending,
+    loginError: loginMutation.error as Error | null,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
