@@ -1,23 +1,20 @@
-import { useState } from "react";
-
 interface PokemonCardProps {
+  pokemonId: number;
   name: string;
   type: string[];
-  onCatch: () => void;
-  onRelease: () => void;
+  isCaught: boolean;
+  onToggle: (pokemonId: number) => void;
 }
 
-function PokemonCard({ name, type, onCatch, onRelease }: PokemonCardProps) {
-  const [isCaught, setIsCaught] = useState(false);
-
+function PokemonCard({
+  pokemonId,
+  name,
+  type,
+  isCaught,
+  onToggle,
+}: PokemonCardProps) {
   const handleClick = () => {
-    if (isCaught) {
-      setIsCaught(false);
-      onRelease();
-    } else {
-      setIsCaught(true);
-      onCatch();
-    }
+    onToggle(pokemonId);
   };
 
   return (

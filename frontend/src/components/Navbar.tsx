@@ -16,7 +16,7 @@ export default function Navbar() {
               Pokedex
             </Link>
             <Link
-              to="/MyCollection"
+              to="/my-collection"
               className="hover:text-blue-200 transition font-medium"
             >
               My Collection

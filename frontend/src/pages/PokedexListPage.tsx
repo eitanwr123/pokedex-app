@@ -1,28 +1,61 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllPokemon } from "../services/pokemonService";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getAllPokemon,
+  getUserCollection,
+  toggleCatchPokemon,
+} from "../services/pokemonService";
 import PokemonCard from "../components/PokemonCard";
+import { useState } from "react";
 
 export default function PokedexListPage() {
-  const [caughtCount, setCaughtCount] = useState(0);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["pokemon"],
-    queryFn: () => getAllPokemon(),
-  });
-
-  if (isLoading) return <div>Loading Pokemons...</div>;
-  if (error) return <div>Error loading Pokemons!</div>;
-  if (!data) throw new Error("No data found");
-
-  const allPokemons = data.data;
-
-  const handleCatch = () => {
-    setCaughtCount(caughtCount + 1);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const paginationParams = {
+    page,
+    limit,
+    evolutionTier: undefined,
   };
 
-  const handleRelease = () => {
-    setCaughtCount(caughtCount - 1);
+  const queryClient = useQueryClient();
+
+  const {
+    data: pokemonData,
+    isLoading: isPokemonLoading,
+    error: pokemonError,
+  } = useQuery({
+    queryKey: ["pokemon", page, limit],
+    queryFn: () => getAllPokemon(paginationParams),
+  });
+
+  const { data: collectionData, isLoading: isCollectionLoading } = useQuery({
+    queryKey: ["collection"],
+    queryFn: getUserCollection,
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (pokemonId: number) => toggleCatchPokemon(pokemonId),
+    onSuccess: async () => {
+      console.log("Toggle success, refetching collection");
+      await queryClient.refetchQueries({ queryKey: ["collection"] });
+    },
+    onError: (error) => {
+      console.error("Toggle error:", error);
+    },
+  });
+
+  if (isPokemonLoading || isCollectionLoading) {
+    return <div>Loading Pokemons...</div>;
+  }
+  if (pokemonError) return <div>Error loading Pokemons!</div>;
+  if (!pokemonData) throw new Error("No data found");
+
+  const allPokemons = pokemonData.data;
+  const caughtPokemonIds = new Set(
+    collectionData?.collection.map((p) => p.id) ?? []
+  );
+
+  const handleToggle = (pokemonId: number) => {
+    toggleMutation.mutate(pokemonId);
   };
 
   return (
@@ -30,16 +63,17 @@ export default function PokedexListPage() {
       <h1>My Pokedex App</h1>
 
       <p>
-        Caught: {caughtCount} / {allPokemons.length}
+        Caught: {caughtPokemonIds.size} / {allPokemons.length}
       </p>
 
       {allPokemons.map((pokemon) => (
         <PokemonCard
           key={pokemon.name}
+          pokemonId={pokemon.id}
           name={pokemon.name}
           type={pokemon.types}
-          onCatch={handleCatch}
-          onRelease={handleRelease}
+          isCaught={caughtPokemonIds.has(pokemon.id)}
+          onToggle={handleToggle}
         />
       ))}
     </div>

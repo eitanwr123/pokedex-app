@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     isLoading,
     error,
-  } = useQuery<PublicUser | null, Error>({
+  } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: async () => {
       const token = localStorage.getItem("auth_token");
@@ -82,15 +82,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!user;
 
-  const value = {
+  const value: AuthContextType = {
     user: user ?? null,
     isAuthenticated,
     isLoading,
-    error: error as Error | null,
+    error: error ?? null,
     login,
     logout,
     isLoggingIn: loginMutation.isPending,
-    loginError: loginMutation.error as Error | null,
+    loginError: loginMutation.error ?? null,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

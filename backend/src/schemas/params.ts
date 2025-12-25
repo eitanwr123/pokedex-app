@@ -11,7 +11,11 @@ export const idParamSchema = z.object({
 });
 
 export const catchReleasePokemonParamSchema = z.object({
-  pokemonId: z.number().int().positive({
-    message: "Pokemon ID must be a positive integer",
-  }),
+  pokemonId: z
+    .string()
+    .regex(/^\d+$/, "Pokemon ID must be a valid number")
+    .transform((val) => parseInt(val, 10))
+    .refine((val) => val > 0, {
+      message: "Pokemon ID must be a positive integer",
+    }),
 });

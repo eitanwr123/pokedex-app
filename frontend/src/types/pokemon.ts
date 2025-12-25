@@ -45,5 +45,5 @@ export interface UserPokemon {
 export type PokemonListResponse = PaginatedResponse<Pokemon>;
 
 export interface UserCollectionResponse {
-  collection: UserPokemon[];
+  collection: Pokemon[];
 }
