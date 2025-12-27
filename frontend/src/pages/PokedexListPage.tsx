@@ -5,20 +5,27 @@ import PaginationControls from "../components/PaginationControls";
 import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import type { PaginatedResponse, Pokemon } from "../types";
+import { useState } from "react";
+import { SearchInput } from "../components/searchInput";
 
 export default function PokedexListPage() {
+  const [searchInput, setSearchInput] = useState("");
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
     usePagination();
   const { handleToggle } = useTogglePokemon();
 
-  const paginationParam = { page, limit };
+  const paginationParam = {
+    page,
+    limit,
+    ...(searchInput && { name: searchInput }),
+  };
 
   const {
     data: pokemonData,
     isLoading: isPokemonLoading,
     error: pokemonError,
   } = useQuery<PaginatedResponse<Pokemon>>({
-    queryKey: ["pokemon", page, limit],
+    queryKey: ["pokemon", page, limit, searchInput],
     queryFn: () => getAllPokemon(paginationParam),
   });
 
@@ -53,6 +60,10 @@ export default function PokedexListPage() {
       <p>
         Caught: {caughtPokemonIds.size} / {totalPokemon}
       </p>
+
+      <div>
+        <SearchInput value={searchInput} onChange={setSearchInput} />
+      </div>
 
       <PaginationControls
         currentPage={page}
