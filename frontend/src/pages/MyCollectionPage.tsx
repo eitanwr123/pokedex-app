@@ -1,50 +1,73 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUserCollection, toggleCatchPokemon } from "../services/pokemonService";
+import { useQuery } from "@tanstack/react-query";
+import { getUserCollection } from "../services/pokemonService";
 import PokemonCard from "../components/PokemonCard";
+import PaginationControls from "../components/PaginationControls";
+import { usePagination } from "../hooks/usePagination";
+import { useTogglePokemon } from "../hooks/useTogglePokemon";
+import type { PaginatedResponse, Pokemon } from "../types";
 
 export default function MyCollectionPage() {
-  const queryClient = useQueryClient();
+  const { page, limit, handleNext, handlePrev, handleLimitChange } =
+    usePagination();
+  const { handleToggle } = useTogglePokemon();
 
-  const { data: collectionData, isLoading, error } = useQuery({
-    queryKey: ["collection"],
-    queryFn: getUserCollection,
-  });
-
-  const toggleMutation = useMutation({
-    mutationFn: (pokemonId: number) => toggleCatchPokemon(pokemonId),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ["collection"] });
-    },
+  const {
+    data: collectionData,
+    isLoading,
+    error,
+  } = useQuery<PaginatedResponse<Pokemon>>({
+    queryKey: ["collection", page, limit],
+    queryFn: () => getUserCollection({ page, limit }),
   });
 
   if (isLoading) return <div>Loading your collection...</div>;
   if (error) return <div>Error loading collection!</div>;
+  if (!collectionData) throw new Error("No collection data found");
 
-  const myPokemon = collectionData?.collection ?? [];
-
-  const handleToggle = (pokemonId: number) => {
-    toggleMutation.mutate(pokemonId);
-  };
+  const myPokemon = collectionData.data;
+  const totalPages = collectionData.pagination.totalPages;
+  const totalPokemon = collectionData.pagination.total;
 
   return (
     <div>
       <h1>My Collection</h1>
 
-      {myPokemon.length === 0 ? (
+      {totalPokemon === 0 ? (
         <p>You haven't caught any Pokemon yet. Go catch some!</p>
       ) : (
         <>
-          <p>You have caught {myPokemon.length} Pokemon!</p>
-          {myPokemon.map((pokemon) => (
-            <PokemonCard
-              key={pokemon.name}
-              pokemonId={pokemon.id}
-              name={pokemon.name}
-              type={pokemon.types}
-              isCaught={true}
-              onToggle={handleToggle}
-            />
-          ))}
+          <p>You have caught {totalPokemon} Pokemon!</p>
+
+          <PaginationControls
+            currentPage={page}
+            totalPages={totalPages}
+            limit={limit}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onLimitChange={handleLimitChange}
+          />
+
+          <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+            {myPokemon.map((pokemon) => (
+              <PokemonCard
+                key={pokemon.id}
+                pokemonId={pokemon.id}
+                name={pokemon.name}
+                type={pokemon.types}
+                isCaught={true}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
+
+          <PaginationControls
+            currentPage={page}
+            totalPages={totalPages}
+            limit={limit}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onLimitChange={handleLimitChange}
+          />
         </>
       )}
     </div>

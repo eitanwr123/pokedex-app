@@ -1,81 +1,89 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getAllPokemon,
-  getUserCollection,
-  toggleCatchPokemon,
-} from "../services/pokemonService";
+import { useQuery } from "@tanstack/react-query";
+import { getAllPokemon, getUserCollection } from "../services/pokemonService";
 import PokemonCard from "../components/PokemonCard";
-import { useState } from "react";
+import PaginationControls from "../components/PaginationControls";
+import { usePagination } from "../hooks/usePagination";
+import { useTogglePokemon } from "../hooks/useTogglePokemon";
+import type { PaginatedResponse, Pokemon } from "../types";
 
 export default function PokedexListPage() {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const paginationParams = {
-    page,
-    limit,
-    evolutionTier: undefined,
-  };
+  const { page, limit, handleNext, handlePrev, handleLimitChange } =
+    usePagination();
+  const { handleToggle } = useTogglePokemon();
 
-  const queryClient = useQueryClient();
+  const paginationParam = { page, limit };
 
   const {
     data: pokemonData,
     isLoading: isPokemonLoading,
     error: pokemonError,
-  } = useQuery({
+  } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: ["pokemon", page, limit],
-    queryFn: () => getAllPokemon(paginationParams),
+    queryFn: () => getAllPokemon(paginationParam),
   });
 
-  const { data: collectionData, isLoading: isCollectionLoading } = useQuery({
-    queryKey: ["collection"],
-    queryFn: getUserCollection,
-  });
-
-  const toggleMutation = useMutation({
-    mutationFn: (pokemonId: number) => toggleCatchPokemon(pokemonId),
-    onSuccess: async () => {
-      console.log("Toggle success, refetching collection");
-      await queryClient.refetchQueries({ queryKey: ["collection"] });
-    },
-    onError: (error) => {
-      console.error("Toggle error:", error);
-    },
+  const {
+    data: collectionData,
+    isLoading: isCollectionLoading,
+    error: collectionError,
+  } = useQuery<PaginatedResponse<Pokemon>>({
+    queryKey: ["collection", "all"],
+    queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
   });
 
   if (isPokemonLoading || isCollectionLoading) {
     return <div>Loading Pokemons...</div>;
   }
+
   if (pokemonError) return <div>Error loading Pokemons!</div>;
+  if (collectionError) return <div>Error loading collection data!</div>;
   if (!pokemonData) throw new Error("No data found");
+  if (!collectionData) throw new Error("No collection data found");
 
   const allPokemons = pokemonData.data;
-  const caughtPokemonIds = new Set(
-    collectionData?.collection.map((p) => p.id) ?? []
-  );
+  const caughtPokemonIds = new Set(collectionData.data.map((p) => p.id));
 
-  const handleToggle = (pokemonId: number) => {
-    toggleMutation.mutate(pokemonId);
-  };
+  const totalPages = pokemonData.pagination.totalPages;
+  const totalPokemon = pokemonData.pagination.total;
 
   return (
     <div>
       <h1>My Pokedex App</h1>
 
       <p>
-        Caught: {caughtPokemonIds.size} / {allPokemons.length}
+        Caught: {caughtPokemonIds.size} / {totalPokemon}
       </p>
 
-      {allPokemons.map((pokemon) => (
-        <PokemonCard
-          key={pokemon.name}
-          pokemonId={pokemon.id}
-          name={pokemon.name}
-          type={pokemon.types}
-          isCaught={caughtPokemonIds.has(pokemon.id)}
-          onToggle={handleToggle}
-        />
-      ))}
+      <PaginationControls
+        currentPage={page}
+        totalPages={totalPages}
+        limit={limit}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        onLimitChange={handleLimitChange}
+      />
+
+      <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+        {allPokemons.map((pokemon) => (
+          <PokemonCard
+            key={pokemon.id}
+            pokemonId={pokemon.id}
+            name={pokemon.name}
+            type={pokemon.types}
+            isCaught={caughtPokemonIds.has(pokemon.id)}
+            onToggle={handleToggle}
+          />
+        ))}
+      </div>
+
+      <PaginationControls
+        currentPage={page}
+        totalPages={totalPages}
+        limit={limit}
+        onNext={handleNext}
+        onPrev={handlePrev}
+        onLimitChange={handleLimitChange}
+      />
     </div>
   );
 }

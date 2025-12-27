@@ -87,12 +87,28 @@ export class PokemonRepositoryImpl {
   }
 
   //find pokemon collection by user id
-  async findPokemonByUserId(userId: number): Promise<Pokemon[]> {
-    const result = await db
-      .select()
-      .from(userPokemon)
-      .innerJoin(pokemon, eq(userPokemon.pokemonId, pokemon.id))
-      .where(eq(userPokemon.userId, userId));
-    return result.map((r) => ({ ...r.pokemon }));
+  async findPokemonByUserId(
+    userId: number,
+    offset: number,
+    limit: number
+  ): Promise<{ pokemon: Pokemon[]; total: number }> {
+    const [pokemonList, totalCount] = await Promise.all([
+      db
+        .select()
+        .from(userPokemon)
+        .innerJoin(pokemon, eq(userPokemon.pokemonId, pokemon.id))
+        .where(eq(userPokemon.userId, userId))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: count() })
+        .from(userPokemon)
+        .where(eq(userPokemon.userId, userId)),
+    ]);
+
+    return {
+      pokemon: pokemonList.map((r) => ({ ...r.pokemon })),
+      total: totalCount[0].count,
+    };
   }
 }

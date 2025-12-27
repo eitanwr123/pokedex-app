@@ -3,21 +3,6 @@ import { db } from "../db/client";
 import { NewUserPokemon, UserPokemon, userPokemon } from "../db/schema";
 
 export class userPokemonRepositorylmpl {
-  async findPokemonByUserIdAndPokemonId(
-    NewUserPokemon: NewUserPokemon
-  ): Promise<UserPokemon[]> {
-    const result = await db
-      .select()
-      .from(userPokemon)
-      .where(
-        and(
-          eq(userPokemon.userId, NewUserPokemon.userId),
-          eq(userPokemon.pokemonId, NewUserPokemon.pokemonId)
-        )
-      );
-    return result;
-  }
-
   async addPokemonToUserCollection(
     input: NewUserPokemon | NewUserPokemon[]
   ): Promise<NewUserPokemon[]> {
@@ -48,14 +33,5 @@ export class userPokemonRepositorylmpl {
         )
       )
       .returning();
-  }
-
-  //retrieve all pokemon in user's collection
-  async findPokemonByUserId(userId: number): Promise<UserPokemon[]> {
-    const result = await db
-      .select()
-      .from(userPokemon)
-      .where(eq(userPokemon.userId, userId));
-    return result;
   }
 }

@@ -22,9 +22,13 @@ export async function getPokemonById(id: number): Promise<Pokemon> {
   return response.data;
 }
 
-export async function getUserCollection(): Promise<UserCollectionResponse> {
-  const response = await apiClient.get<UserCollectionResponse>(
-    "/api/me/collection"
+export async function getUserCollection(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<PaginatedResponse<Pokemon>> {
+  const response = await apiClient.get<PaginatedResponse<Pokemon>>(
+    "/api/me/collection",
+    { params }
   );
   return response.data;
 }

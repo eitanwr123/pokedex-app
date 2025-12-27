@@ -1,6 +1,6 @@
 import Router from "express";
 import { authMiddleware } from "../middleware/auth";
-import getUserCollection from "../controllers/pokemon/getUserCollection.controller";
+import { getUserCollection } from "../controllers/pokemon/getUserCollection.controller";
 import { catchReleasePokemonController } from "../controllers/pokemon/catchReleasePokemon.controller";
 
 const router = Router();
