@@ -4,12 +4,15 @@ import PokemonCard from "../components/PokemonCard";
 import PaginationControls from "../components/PaginationControls";
 import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
+import { useDebounce } from "../hooks/useDebounce";
 import type { PaginatedResponse, Pokemon } from "../types";
 import { useState } from "react";
 import { SearchInput } from "../components/searchInput";
 
 export default function PokedexListPage() {
   const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
+
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
     usePagination();
   const { handleToggle } = useTogglePokemon();
@@ -17,7 +20,7 @@ export default function PokedexListPage() {
   const paginationParam = {
     page,
     limit,
-    ...(searchInput && { name: searchInput }),
+    ...(debouncedSearch && { name: debouncedSearch }),
   };
 
   const {
@@ -26,8 +29,9 @@ export default function PokedexListPage() {
     isFetching: isPokemonFetching,
     error: pokemonError,
   } = useQuery<PaginatedResponse<Pokemon>>({
-    queryKey: ["pokemon", page, limit, searchInput],
+    queryKey: ["pokemon", page, limit, debouncedSearch],
     queryFn: () => getAllPokemon(paginationParam),
+    placeholderData: (previousData) => previousData,
   });
 
   const {
