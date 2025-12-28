@@ -10,17 +10,17 @@ export async function catchReleasePokemonService(
   const userPokemon = { userId, pokemonId };
   let result: NewUserPokemon[];
 
+  const pokemonRepo = new PokemonRepositoryImpl();
   const userPokemonRepository = new userPokemonRepositorylmpl();
 
-  const userCollection = await userPokemonRepository.findPokemonByUserId(
-    userId
+  const { pokemon: userCollection } = await pokemonRepo.findPokemonByUserId(
+    userId,
+    0,
+    10000
   );
-  const pokemonInCollection = userCollection.find(
-    (p) => p.pokemonId === pokemonId
-  );
+  const pokemonInCollection = userCollection.find((p) => p.id === pokemonId);
 
   //check for pre evolutions
-  const pokemonRepo = new PokemonRepositoryImpl();
   const preEvolutionsIds = await getAllPreEvolutions(pokemonId, (id) =>
     pokemonRepo.findPokemonById(id)
   );
@@ -29,7 +29,7 @@ export async function catchReleasePokemonService(
   let userPokemons: NewUserPokemon[];
   if (preEvolutionsIds.length > 0) {
     userPokemons = preEvolutionsIds
-      .filter((id) => !userCollection.find((p) => p.pokemonId === id))
+      .filter((id) => !userCollection.find((p) => p.id === id))
       .map((id) => ({ userId, pokemonId: id }));
     //add the original pokemon to the list
     userPokemons.push(userPokemon);

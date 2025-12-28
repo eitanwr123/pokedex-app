@@ -13,7 +13,8 @@ export const getAllPokemon = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(400).json({
-        error: "Validation error",
+        error: "ValidationError",
+        message: "Validation error",
         details: error.issues.map((err) => ({
           field: err.path.join("."),
           message: err.message,
@@ -23,7 +24,7 @@ export const getAllPokemon = async (req: Request, res: Response) => {
     }
 
     res.status(500).json({
-      error: "Internal server error",
+      error: "InternalServerError",
       message: error instanceof Error ? error.message : "Unknown error",
     });
   }

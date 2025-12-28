@@ -1,21 +1,45 @@
 import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth";
 import { getUserCollectionService } from "../../services/getUserCollectionService";
-const getUserCollection = async (req: AuthRequest, res: Response) => {
+import { paginationSchema } from "../../schemas/pagination";
+import { ZodError } from "zod";
+
+export const getUserCollection = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+      res.status(401).json({
+        error: "Unauthorized",
+        message: "User authentication required",
+      });
+      return;
     }
 
-    const userCollection = await getUserCollectionService(userId);
-    return res.status(200).json({ collection: userCollection });
+    const validatedParams = paginationSchema.parse(req.query);
+
+    const result = await getUserCollectionService({
+      ...validatedParams,
+      userId,
+    });
+
+    res.status(200).json(result);
   } catch (error) {
-    return error instanceof Error
-      ? res.status(400).json({ error: error.message })
-      : res.status(500).json({ error: "Internal Server Error" });
+    if (error instanceof ZodError) {
+      res.status(400).json({
+        error: "ValidationError",
+        message: "Validation error",
+        details: error.issues.map((err) => ({
+          field: err.path.join("."),
+          message: err.message,
+        })),
+      });
+      return;
+    }
+
+    res.status(500).json({
+      error: "InternalServerError",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
-
-export default getUserCollection;

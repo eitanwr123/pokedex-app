@@ -11,12 +11,19 @@ export const getPokemonById = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ pokemon });
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Invalid ID parameter", details: error.message });
+      return res.status(400).json({
+        error: "ValidationError",
+        message: "Invalid ID parameter",
+      });
     }
     return error instanceof Error
-      ? res.status(400).json({ error: error.message })
-      : res.status(500).json({ error: "Internal Server Error" });
+      ? res.status(400).json({
+          error: "BadRequest",
+          message: error.message,
+        })
+      : res.status(500).json({
+          error: "InternalServerError",
+          message: "Internal server error",
+        });
   }
 };

@@ -14,8 +14,8 @@ export const paginationSchema = z.object({
     .optional()
     .default("10")
     .transform((val) => parseInt(val, 10))
-    .refine((val) => !isNaN(val) && val > 0 && val <= 100, {
-      message: "Limit must be a positive number between 1 and 100",
+    .refine((val) => !isNaN(val) && val > 0 && val <= 1000, {
+      message: "Limit must be a positive number between 1 and 1000",
     }),
 });
 
