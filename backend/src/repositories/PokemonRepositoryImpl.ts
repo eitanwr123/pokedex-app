@@ -111,4 +111,18 @@ export class PokemonRepositoryImpl {
       total: totalCount[0].count,
     };
   }
+
+  // return all the types as unique
+  async findAllTypes(): Promise<string[]> {
+    const result = await db.select().from(pokemon);
+
+    const typesSet = new Set<string>();
+    result.forEach((row) => {
+      if (Array.isArray(row.types)) {
+        row.types.forEach((type) => typesSet.add(type));
+      }
+    });
+
+    return Array.from(typesSet);
+  }
 }
