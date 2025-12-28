@@ -1,10 +1,5 @@
 import type { PaginationAndFilterParams } from "../schemas/pokemonFilterParamsSchem";
-import type {
-  PaginatedResponse,
-  Pokemon,
-  UserCollectionResponse,
-  UserPokemon,
-} from "../types";
+import type { PaginatedResponse, Pokemon, UserPokemon } from "../types";
 import { apiClient } from "./api";
 
 export async function getAllPokemon(

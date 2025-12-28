@@ -11,7 +11,7 @@ export function SearchInput({
   value,
   onChange,
   placeholder = "Search...",
-  debounceMs = 300,
+  debounceMs = 500,
 }: SearchInputProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 

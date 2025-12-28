@@ -23,6 +23,7 @@ export default function PokedexListPage() {
   const {
     data: pokemonData,
     isLoading: isPokemonLoading,
+    isFetching: isPokemonFetching,
     error: pokemonError,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: ["pokemon", page, limit, searchInput],
@@ -38,7 +39,7 @@ export default function PokedexListPage() {
     queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
   });
 
-  if (isPokemonLoading || isCollectionLoading) {
+  if ((isPokemonLoading || isCollectionLoading) && !pokemonData) {
     return <div>Loading Pokemons...</div>;
   }
 
@@ -61,8 +62,11 @@ export default function PokedexListPage() {
         Caught: {caughtPokemonIds.size} / {totalPokemon}
       </p>
 
-      <div>
+      <div className="flex items-center gap-2">
         <SearchInput value={searchInput} onChange={setSearchInput} />
+        {isPokemonFetching && (
+          <span className="text-sm text-gray-500">Searching...</span>
+        )}
       </div>
 
       <PaginationControls
