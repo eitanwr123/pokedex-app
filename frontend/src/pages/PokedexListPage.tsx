@@ -62,6 +62,7 @@ export default function PokedexListPage() {
       evolutionTier: "",
       description: "",
     });
+    setFilterParams(new URLSearchParams());
   };
 
   const {
