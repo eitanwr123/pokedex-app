@@ -8,10 +8,19 @@ import { useDebounce } from "../hooks/useDebounce";
 import type { PaginatedResponse, Pokemon } from "../types";
 import { useState } from "react";
 import { SearchInput } from "../components/searchInput";
+import { FilterPanel } from "../components/FilterPanel";
 
 export default function PokedexListPage() {
   const [searchInput, setSearchInput] = useState("");
+  const [filters, setFilters] = useState({
+    type: "",
+    evolutionTier: "",
+    description: "",
+  });
+
   const debouncedSearch = useDebounce(searchInput, 500);
+
+  const debouncedDescription = useDebounce(filters.description, 500);
 
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
     usePagination();
@@ -21,6 +30,23 @@ export default function PokedexListPage() {
     page,
     limit,
     ...(debouncedSearch && { name: debouncedSearch }),
+    ...(filters.type && { type: filters.type }),
+    ...(filters.evolutionTier && {
+      evolutionTier: Number(filters.evolutionTier),
+    }),
+    ...(debouncedDescription && { description: debouncedDescription }),
+  };
+
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      type: "",
+      evolutionTier: "",
+      description: "",
+    });
   };
 
   const {
@@ -29,7 +55,15 @@ export default function PokedexListPage() {
     isFetching: isPokemonFetching,
     error: pokemonError,
   } = useQuery<PaginatedResponse<Pokemon>>({
-    queryKey: ["pokemon", page, limit, debouncedSearch],
+    queryKey: [
+      "pokemon",
+      page,
+      limit,
+      debouncedSearch,
+      filters.type,
+      filters.evolutionTier,
+      debouncedDescription,
+    ],
     queryFn: () => getAllPokemon(paginationParam),
     placeholderData: (previousData) => previousData,
   });
@@ -72,6 +106,12 @@ export default function PokedexListPage() {
           <span className="text-sm text-gray-500">Searching...</span>
         )}
       </div>
+
+      <FilterPanel
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
 
       <PaginationControls
         currentPage={page}
