@@ -9,13 +9,15 @@ import type { PaginatedResponse, Pokemon } from "../types";
 import { useState } from "react";
 import { SearchInput } from "../components/searchInput";
 import { FilterPanel } from "../components/FilterPanel";
+import { useSearchParams } from "react-router-dom";
 
 export default function PokedexListPage() {
+  const [filterParams, setFilterParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState("");
   const [filters, setFilters] = useState({
-    type: "",
-    evolutionTier: "",
-    description: "",
+    type: filterParams.get("type") || "",
+    evolutionTier: filterParams.get("evolutionTier") || "",
+    description: filterParams.get("description") || "",
   });
 
   const debouncedSearch = useDebounce(searchInput, 500);
@@ -38,7 +40,20 @@ export default function PokedexListPage() {
   };
 
   const handleFilterChange = (filterName: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [filterName]: value }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [filterName]: value };
+
+      // Update URL params
+      const newParams = new URLSearchParams(filterParams);
+      if (value) {
+        newParams.set(filterName, value);
+      } else {
+        newParams.delete(filterName);
+      }
+      setFilterParams(newParams);
+
+      return newFilters;
+    });
   };
 
   const handleClearFilters = () => {
