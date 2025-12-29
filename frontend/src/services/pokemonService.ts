@@ -12,8 +12,12 @@ export async function getAllPokemon(
   return response.data;
 }
 
-export async function getPokemonById(id: number): Promise<Pokemon> {
-  const response = await apiClient.get<Pokemon>(`/api/pokemon/${id}`);
+export async function getPokemonById(
+  id: number
+): Promise<{ pokemon: Pokemon }> {
+  const response = await apiClient.get<{ pokemon: Pokemon }>(
+    `/api/pokemon/${id}`
+  );
   return response.data;
 }
 

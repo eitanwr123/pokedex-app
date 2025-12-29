@@ -10,10 +10,14 @@ import { useState } from "react";
 import { SearchInput } from "../components/searchInput";
 import { FilterPanel } from "../components/FilterPanel";
 import { useSearchParams } from "react-router-dom";
+import { PokemonDetailModal } from "../components/PokemonDetailModal";
 
 export default function PokedexListPage() {
   const [filterParams, setFilterParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState("");
+  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(
+    null
+  );
   const [filters, setFilters] = useState({
     type: filterParams.get("type") || "",
     evolutionTier: filterParams.get("evolutionTier") || "",
@@ -147,6 +151,7 @@ export default function PokedexListPage() {
             type={pokemon.types}
             isCaught={caughtPokemonIds.has(pokemon.id)}
             onToggle={handleToggle}
+            onClick={() => setSelectedPokemonId(pokemon.id)}
           />
         ))}
       </div>
@@ -159,6 +164,14 @@ export default function PokedexListPage() {
         onPrev={handlePrev}
         onLimitChange={handleLimitChange}
       />
+
+      {selectedPokemonId && (
+        <PokemonDetailModal
+          pokemonId={selectedPokemonId}
+          isCaught={caughtPokemonIds.has(selectedPokemonId)}
+          onClose={() => setSelectedPokemonId(null)}
+        />
+      )}
     </div>
   );
 }

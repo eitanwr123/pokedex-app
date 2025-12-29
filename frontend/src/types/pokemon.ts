@@ -17,12 +17,12 @@ export interface Pokemon {
     back_shiny?: string;
   };
   stats: {
-    hp: number;
-    attack: number;
-    defense: number;
-    specialAttack: number;
-    specialDefense: number;
-    speed: number;
+    Hp: number;
+    Attack: number;
+    Defense: number;
+    SpecialAttack: number;
+    SpecialDefense: number;
+    Speed: number;
   };
   abilities: Array<{
     name: string;
