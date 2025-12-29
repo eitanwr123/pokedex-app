@@ -29,13 +29,35 @@ async function seedPokemon() {
         };
       }
 
+      // Transform abilities from tuples to objects
+      let abilitiesData = null;
+      if (poke.profile?.ability && Array.isArray(poke.profile.ability)) {
+        abilitiesData = poke.profile.ability.map((abilityTuple: [string, string]) => ({
+          name: abilityTuple[0],
+          is_hidden: abilityTuple[1] === "true",
+        }));
+      }
+
+      // Transform stats keys to match frontend interface
+      let statsData = null;
+      if (poke.base) {
+        statsData = {
+          Hp: poke.base.HP,
+          Attack: poke.base.Attack,
+          Defense: poke.base.Defense,
+          SpecialAttack: poke.base["Sp. Attack"],
+          SpecialDefense: poke.base["Sp. Defense"],
+          Speed: poke.base.Speed,
+        };
+      }
+
       await db.insert(pokemon).values({
         name: poke.name.english,
         pokedexNumber: poke.id,
         types: poke.type || null,
         sprites: poke.image || null,
-        stats: poke.base || null,
-        abilities: poke.profile?.ability || null,
+        stats: statsData,
+        abilities: abilitiesData,
         height: poke.profile?.height ? parseInt(poke.profile.height) : null,
         weight: poke.profile?.weight ? parseInt(poke.profile.weight) : null,
         evolution: evolutionData,
