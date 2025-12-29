@@ -5,11 +5,16 @@ import PaginationControls from "../components/PaginationControls";
 import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import type { PaginatedResponse, Pokemon } from "../types";
+import { useState } from "react";
+import { PokemonDetailModal } from "../components/PokemonDetailModal";
 
 export default function MyCollectionPage() {
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
     usePagination();
   const { handleToggle } = useTogglePokemon();
+  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(
+    null
+  );
 
   const {
     data: collectionData,
@@ -56,6 +61,7 @@ export default function MyCollectionPage() {
                 type={pokemon.types}
                 isCaught={true}
                 onToggle={handleToggle}
+                onClick={() => setSelectedPokemonId(pokemon.id)}
               />
             ))}
           </div>
@@ -69,6 +75,13 @@ export default function MyCollectionPage() {
             onLimitChange={handleLimitChange}
           />
         </>
+      )}
+      {selectedPokemonId && (
+        <PokemonDetailModal
+          pokemonId={selectedPokemonId}
+          isCaught={true}
+          onClose={() => setSelectedPokemonId(null)}
+        />
       )}
     </div>
   );

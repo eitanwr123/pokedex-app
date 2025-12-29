@@ -5,6 +5,43 @@ export interface PokemonEvolution {
   next?: [string, string][] | null; // Array of [pokemonId, evolutionMethod]
 }
 
+export interface PokemonData {
+  id: number;
+  name: {
+    english: string;
+    japanese: string;
+    chinese: string;
+    french: string;
+  };
+  type: string[];
+  base: {
+    HP: number;
+    Attack: number;
+    Defense: number;
+    "Sp. Attack": number;
+    "Sp. Defense": number;
+    Speed: number;
+  };
+  species: string;
+  description: string;
+  evolution?: {
+    prev?: [string, string];
+    next?: [string, string][];
+  };
+  profile: {
+    height: string;
+    weight: string;
+    egg: string[];
+    ability: [string, string][];
+    gender: string;
+  };
+  image: {
+    sprite: string;
+    thumbnail: string;
+    hires: string;
+  };
+}
+
 export interface Pokemon {
   id: number;
   name: string;
@@ -31,7 +68,7 @@ export interface Pokemon {
   height: number; // in decimeters
   weight: number; // in hectograms
   evolution: PokemonEvolution;
-  data?: Record<string, any>; // Full Pokemon data
+  data?: PokemonData; // Full Pokemon data from JSON
   createdAt: string;
 }
 
