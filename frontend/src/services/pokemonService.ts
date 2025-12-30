@@ -32,7 +32,7 @@ export async function getUserCollection(params?: {
   return response.data;
 }
 
-export async function toggleCatchPokemon(
+export async function togglePokemon(
   pokemonId: number
 ): Promise<{ message: UserPokemon }> {
   const response = await apiClient.post<{ message: UserPokemon }>(

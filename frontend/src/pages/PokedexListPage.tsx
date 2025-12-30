@@ -6,7 +6,7 @@ import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import { useDebounce } from "../hooks/useDebounce";
 import type { PaginatedResponse, Pokemon } from "../types";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SearchInput } from "../components/searchInput";
 import { FilterPanel } from "../components/FilterPanel";
 import { useSearchParams } from "react-router-dom";
@@ -18,11 +18,15 @@ export default function PokedexListPage() {
   const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(
     null
   );
-  const [filters, setFilters] = useState({
-    type: filterParams.get("type") || "",
-    evolutionTier: filterParams.get("evolutionTier") || "",
-    description: filterParams.get("description") || "",
-  });
+
+  const filters = useMemo(
+    () => ({
+      type: filterParams.get("type") || "",
+      evolutionTier: filterParams.get("evolutionTier") || "",
+      description: filterParams.get("description") || "",
+    }),
+    [filterParams]
+  );
 
   const debouncedSearch = useDebounce(searchInput, 500);
 
@@ -30,6 +34,7 @@ export default function PokedexListPage() {
 
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
     usePagination();
+
   const { handleToggle } = useTogglePokemon();
 
   const paginationParam = {
@@ -44,28 +49,16 @@ export default function PokedexListPage() {
   };
 
   const handleFilterChange = (filterName: string, value: string) => {
-    setFilters((prev) => {
-      const newFilters = { ...prev, [filterName]: value };
-
-      // Update URL params
-      const newParams = new URLSearchParams(filterParams);
-      if (value) {
-        newParams.set(filterName, value);
-      } else {
-        newParams.delete(filterName);
-      }
-      setFilterParams(newParams);
-
-      return newFilters;
-    });
+    const newParams = new URLSearchParams(filterParams);
+    if (value) {
+      newParams.set(filterName, value);
+    } else {
+      newParams.delete(filterName);
+    }
+    setFilterParams(newParams);
   };
 
   const handleClearFilters = () => {
-    setFilters({
-      type: "",
-      evolutionTier: "",
-      description: "",
-    });
     setFilterParams(new URLSearchParams());
   };
 
@@ -85,7 +78,7 @@ export default function PokedexListPage() {
       debouncedDescription,
     ],
     queryFn: () => getAllPokemon(paginationParam),
-    placeholderData: (previousData) => previousData,
+    // placeholderData: (previousData) => previousData,
   });
 
   const {
@@ -97,34 +90,25 @@ export default function PokedexListPage() {
     queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
   });
 
-  if ((isPokemonLoading || isCollectionLoading) && !pokemonData) {
-    return <div>Loading Pokemons...</div>;
-  }
+  const allPokemons = pokemonData?.data || [];
+  const caughtPokemonIds = collectionData
+    ? new Set(collectionData.data.map((p) => p.id))
+    : new Set();
 
-  if (pokemonError) return <div>Error loading Pokemons!</div>;
-  if (collectionError) return <div>Error loading collection data!</div>;
-  if (!pokemonData) throw new Error("No data found");
-  if (!collectionData) throw new Error("No collection data found");
-
-  const allPokemons = pokemonData.data;
-  const caughtPokemonIds = new Set(collectionData.data.map((p) => p.id));
-
-  const totalPages = pokemonData.pagination.totalPages;
-  const totalPokemon = pokemonData.pagination.total;
+  const totalPages = pokemonData?.pagination.totalPages || 1;
+  const totalPokemon = pokemonData?.pagination.total || 0;
 
   return (
     <div>
       <h1>My Pokedex App</h1>
 
       <p>
-        Caught: {caughtPokemonIds.size} / {totalPokemon}
+        Caught: {isCollectionLoading ? "..." : caughtPokemonIds.size} /{" "}
+        {isPokemonLoading ? "..." : totalPokemon}
       </p>
 
       <div className="flex items-center gap-2">
         <SearchInput value={searchInput} onChange={setSearchInput} />
-        {isPokemonFetching && (
-          <span className="text-sm text-gray-500">Searching...</span>
-        )}
       </div>
 
       <FilterPanel
@@ -142,19 +126,23 @@ export default function PokedexListPage() {
         onLimitChange={handleLimitChange}
       />
 
-      <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-        {allPokemons.map((pokemon) => (
-          <PokemonCard
-            key={pokemon.id}
-            pokemonId={pokemon.id}
-            name={pokemon.name}
-            type={pokemon.types}
-            isCaught={caughtPokemonIds.has(pokemon.id)}
-            onToggle={handleToggle}
-            onClick={() => setSelectedPokemonId(pokemon.id)}
-          />
-        ))}
-      </div>
+      {isPokemonLoading && !pokemonData ? (
+        <div>Loading...</div>
+      ) : (
+        <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          {allPokemons.map((pokemon) => (
+            <PokemonCard
+              key={pokemon.id}
+              pokemonId={pokemon.id}
+              name={pokemon.name}
+              type={pokemon.types}
+              isCaught={caughtPokemonIds.has(pokemon.id)}
+              onToggle={handleToggle}
+              onClick={() => setSelectedPokemonId(pokemon.id)}
+            />
+          ))}
+        </div>
+      )}
 
       <PaginationControls
         currentPage={page}

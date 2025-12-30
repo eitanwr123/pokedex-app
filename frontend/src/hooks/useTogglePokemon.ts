@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toggleCatchPokemon } from "../services/pokemonService";
+import { togglePokemon } from "../services/pokemonService";
 
 export function useTogglePokemon() {
   const queryClient = useQueryClient();
 
   const toggleMutation = useMutation({
-    mutationFn: (pokemonId: number) => toggleCatchPokemon(pokemonId),
+    mutationFn: (pokemonId: number) => togglePokemon(pokemonId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["collection"],
