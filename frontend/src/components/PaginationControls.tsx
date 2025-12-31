@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -7,7 +9,7 @@ interface PaginationControlsProps {
   onLimitChange: (limit: number) => void;
 }
 
-export default function PaginationControls({
+const PaginationControls = memo(function PaginationControls({
   currentPage,
   totalPages,
   limit,
@@ -51,4 +53,6 @@ export default function PaginationControls({
       </div>
     </div>
   );
-}
+});
+
+export default PaginationControls;

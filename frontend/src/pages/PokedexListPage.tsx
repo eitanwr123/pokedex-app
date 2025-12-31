@@ -6,7 +6,7 @@ import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import { useDebounce } from "../hooks/useDebounce";
 import type { PaginatedResponse, Pokemon } from "../types";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { SearchInput } from "../components/searchInput";
 import { FilterPanel } from "../components/FilterPanel";
 import { useSearchParams } from "react-router-dom";
@@ -48,25 +48,37 @@ export default function PokedexListPage() {
     ...(debouncedDescription && { description: debouncedDescription }),
   };
 
-  const handleFilterChange = (filterName: string, value: string) => {
-    const newParams = new URLSearchParams(filterParams);
-    if (value) {
-      newParams.set(filterName, value);
-    } else {
-      newParams.delete(filterName);
-    }
-    setFilterParams(newParams);
-  };
+  const handleFilterChange = useCallback(
+    (filterName: string, value: string) => {
+      const newParams = new URLSearchParams(filterParams);
+      if (value) {
+        newParams.set(filterName, value);
+      } else {
+        newParams.delete(filterName);
+      }
+      setFilterParams(newParams);
+    },
+    [filterParams, setFilterParams]
+  );
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setFilterParams(new URLSearchParams());
-  };
+  }, [setFilterParams]);
+
+  const handlePokemonClick = useCallback((pokemonId: number) => {
+    setSelectedPokemonId(pokemonId);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setSelectedPokemonId(null);
+  }, []);
 
   const {
     data: pokemonData,
     isLoading: isPokemonLoading,
     isFetching: isPokemonFetching,
     error: pokemonError,
+    refetch: refetchPokemon,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: [
       "pokemon",
@@ -85,6 +97,7 @@ export default function PokedexListPage() {
     data: collectionData,
     isLoading: isCollectionLoading,
     error: collectionError,
+    refetch: refetchCollection,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: ["collection", "all"],
     queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
@@ -104,11 +117,28 @@ export default function PokedexListPage() {
 
       <p>
         Caught: {isCollectionLoading ? "..." : caughtPokemonIds.size} /{" "}
-        {isPokemonLoading ? "..." : totalPokemon}
+        {isPokemonLoading && !pokemonData ? "..." : totalPokemon}
       </p>
+
+      {collectionError && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+          <div className="flex items-center justify-between">
+            <span>Warning: Could not load your collection data</span>
+            <button
+              onClick={() => refetchCollection()}
+              className="bg-yellow-700 text-white px-3 py-1 rounded hover:bg-yellow-800"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <SearchInput value={searchInput} onChange={setSearchInput} />
+        {isPokemonFetching && (
+          <span className="text-sm text-gray-500">Searching...</span>
+        )}
       </div>
 
       <FilterPanel
@@ -117,47 +147,73 @@ export default function PokedexListPage() {
         onClearFilters={handleClearFilters}
       />
 
-      <PaginationControls
-        currentPage={page}
-        totalPages={totalPages}
-        limit={limit}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onLimitChange={handleLimitChange}
-      />
-
-      {isPokemonLoading && !pokemonData ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-          {allPokemons.map((pokemon) => (
-            <PokemonCard
-              key={pokemon.id}
-              pokemonId={pokemon.id}
-              name={pokemon.name}
-              type={pokemon.types}
-              isCaught={caughtPokemonIds.has(pokemon.id)}
-              onToggle={handleToggle}
-              onClick={() => setSelectedPokemonId(pokemon.id)}
-            />
-          ))}
+      {pokemonError ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-4">
+          <h3 className="font-bold mb-2">Error Loading Pokemon</h3>
+          <p className="mb-3">
+            {pokemonError instanceof Error
+              ? pokemonError.message
+              : "Failed to load Pokemon data. Please try again."}
+          </p>
+          <button
+            onClick={() => refetchPokemon()}
+            className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
+          >
+            Retry
+          </button>
         </div>
-      )}
+      ) : isPokemonLoading && !pokemonData ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Loading Pokemon...</p>
+        </div>
+      ) : allPokemons.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-600 mb-2">No Pokemon found</p>
+          <p className="text-sm text-gray-500">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      ) : (
+        <>
+          <PaginationControls
+            currentPage={page}
+            totalPages={totalPages}
+            limit={limit}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onLimitChange={handleLimitChange}
+          />
 
-      <PaginationControls
-        currentPage={page}
-        totalPages={totalPages}
-        limit={limit}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onLimitChange={handleLimitChange}
-      />
+          <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+            {allPokemons.map((pokemon) => (
+              <PokemonCard
+                key={pokemon.id}
+                pokemonId={pokemon.id}
+                name={pokemon.name}
+                type={pokemon.types}
+                isCaught={caughtPokemonIds.has(pokemon.id)}
+                onToggle={handleToggle}
+                onClick={handlePokemonClick}
+              />
+            ))}
+          </div>
+
+          <PaginationControls
+            currentPage={page}
+            totalPages={totalPages}
+            limit={limit}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onLimitChange={handleLimitChange}
+          />
+        </>
+      )}
 
       {selectedPokemonId && (
         <PokemonDetailModal
           pokemonId={selectedPokemonId}
           isCaught={caughtPokemonIds.has(selectedPokemonId)}
-          onClose={() => setSelectedPokemonId(null)}
+          onClose={handleModalClose}
         />
       )}
     </div>

@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface FilterPanelProps {
   filters: {
     type: string;
@@ -8,7 +10,7 @@ interface FilterPanelProps {
   onClearFilters: () => void;
 }
 
-export function FilterPanel({
+export const FilterPanel = memo(function FilterPanel({
   filters,
   onFilterChange,
   onClearFilters,
@@ -152,4 +154,4 @@ export function FilterPanel({
       )}
     </div>
   );
-}
+});

@@ -11,7 +11,9 @@ interface PokemonDetailModalProps {
 
 export function PokemonDetailModal(props: PokemonDetailModalProps) {
   const { handleToggle } = useTogglePokemon();
-  const { data, isLoading, isError } = useQuery<{ pokemon: Pokemon }>({
+  const { data, isLoading, isError, error, refetch } = useQuery<{
+    pokemon: Pokemon;
+  }>({
     queryKey: ["pokemonDetail", "detail", props.pokemonId],
     queryFn: () => getPokemonById(props.pokemonId),
   });
@@ -40,7 +42,7 @@ export function PokemonDetailModal(props: PokemonDetailModalProps) {
       steel: "#B8B8D0",
       fairy: "#EE99AC",
     };
-    return typeColors[types[0]?.toLowerCase()] || "#F5DEB3";
+    return typeColors[types[0].toLowerCase()] || "#F5DEB3";
   };
 
   const cardBgColor = pokemon ? getTypeColor(pokemon.types) : "#F5DEB3";
@@ -70,11 +72,28 @@ export function PokemonDetailModal(props: PokemonDetailModalProps) {
         </button>
 
         {isLoading && (
-          <div className="p-8 text-center text-white text-xl">Loading...</div>
+          <div className="p-8 text-center text-white text-xl">
+            Loading Pokemon details...
+          </div>
         )}
         {isError && (
-          <div className="p-8 text-center text-red-200 text-xl">
-            Error loading Pokémon details.
+          <div className="p-8 text-center">
+            <div className="bg-white bg-opacity-90 rounded-lg p-6">
+              <h3 className="text-red-600 text-xl font-bold mb-2">
+                Error Loading Pokemon
+              </h3>
+              <p className="text-gray-700 mb-4">
+                {error instanceof Error
+                  ? error.message
+                  : "Could not load Pokemon details. Please try again."}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-semibold"
+              >
+                Retry
+              </button>
+            </div>
           </div>
         )}
 

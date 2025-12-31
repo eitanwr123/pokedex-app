@@ -1,13 +1,15 @@
+import { memo } from "react";
+
 interface PokemonCardProps {
   pokemonId: number;
   name: string;
   type: string[];
   isCaught: boolean;
   onToggle: (pokemonId: number) => void;
-  onClick?: () => void;
+  onClick?: (pokemonId: number) => void;
 }
 
-function PokemonCard({
+const PokemonCard = memo(function PokemonCard({
   pokemonId,
   name,
   type,
@@ -19,9 +21,13 @@ function PokemonCard({
     onToggle(pokemonId);
   };
 
+  const handleCardClick = () => {
+    onClick?.(pokemonId);
+  };
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleCardClick}
       className="border border-gray-300 rounded-lg p-4 my-2 bg-white shadow-sm max-w-xs cursor-pointer hover:shadow-md transition-shadow"
     >
       <h2 className="text-xl font-bold mb-2">{name}</h2>
@@ -42,6 +48,6 @@ function PokemonCard({
       </button>
     </div>
   );
-}
+});
 
 export default PokemonCard;
