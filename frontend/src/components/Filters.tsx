@@ -1,4 +1,6 @@
-interface FilterPanelProps {
+import React from 'react';
+
+interface FiltersProps {
   filters: {
     type: string;
     evolutionTier: string;
@@ -11,11 +13,11 @@ interface FilterPanelProps {
   onClearFilters: () => void;
 }
 
-export function FilterPanel({
+export const Filters = React.memo<FiltersProps>(({
   filters,
   onFilterChange,
   onClearFilters,
-}: FilterPanelProps) {
+}) => {
   // All Pokémon types (you can also fetch this from an API or constants file)
   const pokemonTypes = [
     "Ice",
@@ -155,4 +157,6 @@ export function FilterPanel({
       )}
     </div>
   );
-}
+});
+
+Filters.displayName = 'Filters';

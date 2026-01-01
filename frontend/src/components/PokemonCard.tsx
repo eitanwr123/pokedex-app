@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface PokemonCardProps {
   pokemonId: number;
   name: string;
@@ -7,14 +9,14 @@ interface PokemonCardProps {
   onClick?: (pokemonId: number) => void;
 }
 
-function PokemonCard({
+const PokemonCard = React.memo<PokemonCardProps>(({
   pokemonId,
   name,
   type,
   isCaught,
   onToggle,
   onClick,
-}: PokemonCardProps) {
+}) => {
   const handleClick = () => {
     onToggle(pokemonId);
   };
@@ -46,6 +48,8 @@ function PokemonCard({
       </button>
     </div>
   );
-}
+});
+
+PokemonCard.displayName = 'PokemonCard';
 
 export default PokemonCard;

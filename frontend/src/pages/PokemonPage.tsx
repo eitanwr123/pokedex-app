@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllPokemon, getUserCollection, getTotalPokemonCount } from "../services/pokemonService";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
@@ -5,15 +6,16 @@ import { useDebounce } from "../hooks/useDebounce";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import type { PaginatedResponse, Pokemon } from "../types";
 import { PokemonDetailModal } from "../components/PokemonDetailModal";
-import { PokemonStats } from "../components/PokemonStats";
-import { PageHeader } from "../components/PageHeader";
-import { SearchSection } from "../components/SearchSection";
-import { PokemonGrid } from "../components/PokemonGrid";
-import { ErrorDisplay } from "../components/ErrorDisplay";
-import { Loader } from "../components/Loader";
+import { FooterStats } from "../components/FooterStats";
+import { SearchInput } from "../components/SearchInput";
+import { Filters } from "../components/Filters";
+import { PokemonList } from "../components/PokemonList";
+import { PageLayout } from "../components/PageLayout";
+import { FiltersBar } from "../components/FiltersBar";
+import { MainContent } from "../components/MainContent";
 import { MessageBox } from "../components/MessageBox";
 
-export default function PokedexListPage() {
+export default function PokemonPage() {
   const {
     filters,
     page,
@@ -43,20 +45,29 @@ export default function PokedexListPage() {
     ...(debouncedDescription && { description: debouncedDescription }),
   };
 
-  const handlePokemonClick = (pokemonId: number) => {
+  const handlePokemonClick = useCallback((pokemonId: number) => {
     setSelectedPokemonId(pokemonId);
-  };
+  }, [setSelectedPokemonId]);
 
-  const handleModalClose = () => {
+  const handleModalClose = useCallback(() => {
     setSelectedPokemonId(null);
-  };
+  }, [setSelectedPokemonId]);
+
+  const handleNameChange = useCallback((value: string) => {
+    setFilter("name", value);
+  }, [setFilter]);
+
+  const handleFilterChange = useCallback((
+    filterName: "type" | "evolutionTier" | "description",
+    value: string
+  ) => {
+    setFilter(filterName, value);
+  }, [setFilter]);
 
   const {
     data: pokemonData,
     isLoading: isPokemonLoading,
-    isFetching: isPokemonFetching,
     error: pokemonError,
-    refetch: refetchPokemon,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: [
       "pokemon",
@@ -75,7 +86,6 @@ export default function PokedexListPage() {
     data: collectionData,
     isLoading: isCollectionLoading,
     error: collectionError,
-    refetch: refetchCollection,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: ["collection", "all"],
     queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
@@ -86,7 +96,6 @@ export default function PokedexListPage() {
     data: totalCountData,
     isLoading: isTotalCountLoading,
     error: totalCountError,
-    refetch: refetchTotalCount,
   } = useQuery<{ total: number }>({
     queryKey: ["totalPokemonCount"],
     queryFn: getTotalPokemonCount,
@@ -101,65 +110,62 @@ export default function PokedexListPage() {
   const totalPages = pokemonData?.pagination.totalPages || 1;
   const totalPokemon = totalCountData?.total || 0;
 
+  // Combine errors for MainContent
+  const combinedError = pokemonError || collectionError || totalCountError;
+
   return (
     <div>
-      <PageHeader title="My Pokedex App" />
+      <PageLayout>
+        <FiltersBar>
+          <SearchInput
+            value={filters.name}
+            onChange={handleNameChange}
+            placeholder="Search Pokemon by name..."
+          />
+          <Filters
+            filters={{
+              type: filters.type,
+              evolutionTier: filters.evolutionTier,
+              description: filters.description,
+            }}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearFilters}
+          />
+        </FiltersBar>
 
-      {collectionError && (
-        <ErrorDisplay
-          message="Warning: Could not load your collection data"
-          onRetry={refetchCollection}
-          type="warning"
-        />
-      )}
+        <MainContent
+          isLoading={isPokemonLoading && !pokemonData}
+          error={combinedError instanceof Error ? combinedError : null}
+        >
+          {allPokemons.length === 0 ? (
+            <MessageBox
+              title="No Pokemon found"
+              description="Try adjusting your search or filters"
+              variant="empty"
+            />
+          ) : (
+            <PokemonList
+              pokemons={allPokemons}
+              caughtPokemonIds={caughtPokemonIds}
+              currentPage={page}
+              totalPages={totalPages}
+              limit={limit}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              onLimitChange={setLimit}
+              onToggle={handleToggle}
+              onPokemonClick={handlePokemonClick}
+            />
+          )}
+        </MainContent>
 
-      {totalCountError && (
-        <ErrorDisplay
-          message="Warning: Could not load total Pokemon count"
-          onRetry={refetchTotalCount}
-          type="warning"
+        <FooterStats
+          caughtCount={caughtPokemonIds.size}
+          totalCount={totalPokemon}
+          isLoadingCaught={isCollectionLoading}
+          isLoadingTotal={isTotalCountLoading}
         />
-      )}
-
-      <SearchSection
-        filters={filters}
-        onFilterChange={setFilter}
-        onClearFilters={clearFilters}
-        isFetching={isPokemonFetching}
-      />
-
-      {pokemonError ? (
-        <ErrorDisplay
-          message={
-            pokemonError instanceof Error
-              ? pokemonError.message
-              : "Failed to load Pokemon data. Please try again."
-          }
-          onRetry={refetchPokemon}
-          type="error"
-        />
-      ) : isPokemonLoading && !pokemonData ? (
-        <Loader message="Loading Pokemon..." size="medium" />
-      ) : allPokemons.length === 0 ? (
-        <MessageBox
-          title="No Pokemon found"
-          description="Try adjusting your search or filters"
-          variant="empty"
-        />
-      ) : (
-        <PokemonGrid
-          pokemons={allPokemons}
-          caughtPokemonIds={caughtPokemonIds}
-          currentPage={page}
-          totalPages={totalPages}
-          limit={limit}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          onLimitChange={setLimit}
-          onToggle={handleToggle}
-          onPokemonClick={handlePokemonClick}
-        />
-      )}
+      </PageLayout>
 
       {selectedPokemonId && (
         <PokemonDetailModal
@@ -168,13 +174,6 @@ export default function PokedexListPage() {
           onClose={handleModalClose}
         />
       )}
-
-      <PokemonStats
-        caughtCount={caughtPokemonIds.size}
-        totalCount={totalPokemon}
-        isLoadingCaught={isCollectionLoading}
-        isLoadingTotal={isTotalCountLoading}
-      />
     </div>
   );
 }

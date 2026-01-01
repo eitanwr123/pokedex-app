@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import PokedexListPage from "./pages/PokedexListPage";
+import PokemonPage from "./pages/PokemonPage";
 import MyCollectionPage from "./pages/MyCollectionPage";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -40,7 +40,7 @@ function App() {
           path="/pokedex"
           element={
             <ProtectedRoute>
-              <PokedexListPage />
+              <PokemonPage />
             </ProtectedRoute>
           }
         />
