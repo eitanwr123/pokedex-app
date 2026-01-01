@@ -1,19 +1,23 @@
 import React, { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAllPokemon, getUserCollection, getTotalPokemonCount } from "../services/pokemonService";
+import {
+  getAllPokemon,
+  getUserCollection,
+  getTotalPokemonCount,
+} from "../services/pokemonService";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import { useDebounce } from "../hooks/useDebounce";
 import { useUrlFilters } from "../hooks/useUrlFilters";
 import type { PaginatedResponse, Pokemon } from "../types";
 import { PokemonDetailModal } from "../components/PokemonDetailModal";
 import { FooterStats } from "../components/FooterStats";
-import { SearchInput } from "../components/SearchInput";
 import { Filters } from "../components/Filters";
 import { PokemonList } from "../components/PokemonList";
 import { PageLayout } from "../components/PageLayout";
 import { FiltersBar } from "../components/FiltersBar";
 import { MainContent } from "../components/MainContent";
 import { MessageBox } from "../components/MessageBox";
+import { SearchInput } from "../components/searchInput";
 
 export default function PokemonPage() {
   const {
@@ -45,24 +49,30 @@ export default function PokemonPage() {
     ...(debouncedDescription && { description: debouncedDescription }),
   };
 
-  const handlePokemonClick = useCallback((pokemonId: number) => {
-    setSelectedPokemonId(pokemonId);
-  }, [setSelectedPokemonId]);
+  const handlePokemonClick = useCallback(
+    (pokemonId: number) => {
+      setSelectedPokemonId(pokemonId);
+    },
+    [setSelectedPokemonId]
+  );
 
   const handleModalClose = useCallback(() => {
     setSelectedPokemonId(null);
   }, [setSelectedPokemonId]);
 
-  const handleNameChange = useCallback((value: string) => {
-    setFilter("name", value);
-  }, [setFilter]);
+  const handleNameChange = useCallback(
+    (value: string) => {
+      setFilter("name", value);
+    },
+    [setFilter]
+  );
 
-  const handleFilterChange = useCallback((
-    filterName: "type" | "evolutionTier" | "description",
-    value: string
-  ) => {
-    setFilter(filterName, value);
-  }, [setFilter]);
+  const handleFilterChange = useCallback(
+    (filterName: "type" | "evolutionTier" | "description", value: string) => {
+      setFilter(filterName, value);
+    },
+    [setFilter]
+  );
 
   const {
     data: pokemonData,
