@@ -125,4 +125,10 @@ export class PokemonRepositoryImpl {
 
     return Array.from(typesSet);
   }
+
+  // get total Pokemon count
+  async getTotalPokemonCount(): Promise<number> {
+    const result = await db.select({ count: count() }).from(pokemon);
+    return result[0].count;
+  }
 }

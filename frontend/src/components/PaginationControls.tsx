@@ -7,7 +7,7 @@ interface PaginationControlsProps {
   onLimitChange: (limit: number) => void;
 }
 
-export default function PaginationControls({
+function PaginationControls({
   currentPage,
   totalPages,
   limit,
@@ -52,3 +52,5 @@ export default function PaginationControls({
     </div>
   );
 }
+
+export default PaginationControls;

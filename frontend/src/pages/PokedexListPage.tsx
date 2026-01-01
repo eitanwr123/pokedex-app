@@ -1,37 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllPokemon, getUserCollection } from "../services/pokemonService";
-import PokemonCard from "../components/PokemonCard";
-import PaginationControls from "../components/PaginationControls";
-import { usePagination } from "../hooks/usePagination";
+import { getAllPokemon, getUserCollection, getTotalPokemonCount } from "../services/pokemonService";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import { useDebounce } from "../hooks/useDebounce";
+import { useUrlFilters } from "../hooks/useUrlFilters";
 import type { PaginatedResponse, Pokemon } from "../types";
-import { useState } from "react";
-import { SearchInput } from "../components/searchInput";
-import { FilterPanel } from "../components/FilterPanel";
-import { useSearchParams } from "react-router-dom";
+import { PokemonDetailModal } from "../components/PokemonDetailModal";
+import { PokemonStats } from "../components/PokemonStats";
+import { PageHeader } from "../components/PageHeader";
+import { SearchSection } from "../components/SearchSection";
+import { PokemonGrid } from "../components/PokemonGrid";
+import { ErrorDisplay } from "../components/ErrorDisplay";
+import { Loader } from "../components/Loader";
+import { MessageBox } from "../components/MessageBox";
 
 export default function PokedexListPage() {
-  const [filterParams, setFilterParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState("");
-  const [filters, setFilters] = useState({
-    type: filterParams.get("type") || "",
-    evolutionTier: filterParams.get("evolutionTier") || "",
-    description: filterParams.get("description") || "",
-  });
+  const {
+    filters,
+    page,
+    limit,
+    selectedPokemonId,
+    setFilter,
+    clearFilters,
+    setLimit,
+    handleNext,
+    handlePrev,
+    setSelectedPokemonId,
+  } = useUrlFilters();
 
-  const debouncedSearch = useDebounce(searchInput, 500);
-
-  const debouncedDescription = useDebounce(filters.description, 500);
-
-  const { page, limit, handleNext, handlePrev, handleLimitChange } =
-    usePagination();
   const { handleToggle } = useTogglePokemon();
+
+  const debouncedName = useDebounce(filters.name, 500);
+  const debouncedDescription = useDebounce(filters.description, 500);
 
   const paginationParam = {
     page,
     limit,
-    ...(debouncedSearch && { name: debouncedSearch }),
+    ...(debouncedName && { name: debouncedName }),
     ...(filters.type && { type: filters.type }),
     ...(filters.evolutionTier && {
       evolutionTier: Number(filters.evolutionTier),
@@ -39,30 +43,12 @@ export default function PokedexListPage() {
     ...(debouncedDescription && { description: debouncedDescription }),
   };
 
-  const handleFilterChange = (filterName: string, value: string) => {
-    setFilters((prev) => {
-      const newFilters = { ...prev, [filterName]: value };
-
-      // Update URL params
-      const newParams = new URLSearchParams(filterParams);
-      if (value) {
-        newParams.set(filterName, value);
-      } else {
-        newParams.delete(filterName);
-      }
-      setFilterParams(newParams);
-
-      return newFilters;
-    });
+  const handlePokemonClick = (pokemonId: number) => {
+    setSelectedPokemonId(pokemonId);
   };
 
-  const handleClearFilters = () => {
-    setFilters({
-      type: "",
-      evolutionTier: "",
-      description: "",
-    });
-    setFilterParams(new URLSearchParams());
+  const handleModalClose = () => {
+    setSelectedPokemonId(null);
   };
 
   const {
@@ -70,94 +56,124 @@ export default function PokedexListPage() {
     isLoading: isPokemonLoading,
     isFetching: isPokemonFetching,
     error: pokemonError,
+    refetch: refetchPokemon,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: [
       "pokemon",
       page,
       limit,
-      debouncedSearch,
+      debouncedName,
       filters.type,
       filters.evolutionTier,
       debouncedDescription,
     ],
     queryFn: () => getAllPokemon(paginationParam),
-    placeholderData: (previousData) => previousData,
+    placeholderData: (oldData) => oldData,
   });
 
   const {
     data: collectionData,
     isLoading: isCollectionLoading,
     error: collectionError,
+    refetch: refetchCollection,
   } = useQuery<PaginatedResponse<Pokemon>>({
     queryKey: ["collection", "all"],
     queryFn: () => getUserCollection({ page: 1, limit: 1000 }),
+    placeholderData: (oldData) => oldData,
   });
 
-  if ((isPokemonLoading || isCollectionLoading) && !pokemonData) {
-    return <div>Loading Pokemons...</div>;
-  }
+  const {
+    data: totalCountData,
+    isLoading: isTotalCountLoading,
+    error: totalCountError,
+    refetch: refetchTotalCount,
+  } = useQuery<{ total: number }>({
+    queryKey: ["totalPokemonCount"],
+    queryFn: getTotalPokemonCount,
+  });
 
-  if (pokemonError) return <div>Error loading Pokemons!</div>;
-  if (collectionError) return <div>Error loading collection data!</div>;
-  if (!pokemonData) throw new Error("No data found");
-  if (!collectionData) throw new Error("No collection data found");
+  const allPokemons = pokemonData?.data || [];
 
-  const allPokemons = pokemonData.data;
-  const caughtPokemonIds = new Set(collectionData.data.map((p) => p.id));
+  const caughtPokemonIds = collectionData
+    ? new Set<number>(collectionData.data.map((p) => p.id))
+    : new Set<number>();
 
-  const totalPages = pokemonData.pagination.totalPages;
-  const totalPokemon = pokemonData.pagination.total;
+  const totalPages = pokemonData?.pagination.totalPages || 1;
+  const totalPokemon = totalCountData?.total || 0;
 
   return (
     <div>
-      <h1>My Pokedex App</h1>
+      <PageHeader title="My Pokedex App" />
 
-      <p>
-        Caught: {caughtPokemonIds.size} / {totalPokemon}
-      </p>
+      {collectionError && (
+        <ErrorDisplay
+          message="Warning: Could not load your collection data"
+          onRetry={refetchCollection}
+          type="warning"
+        />
+      )}
 
-      <div className="flex items-center gap-2">
-        <SearchInput value={searchInput} onChange={setSearchInput} />
-        {isPokemonFetching && (
-          <span className="text-sm text-gray-500">Searching...</span>
-        )}
-      </div>
+      {totalCountError && (
+        <ErrorDisplay
+          message="Warning: Could not load total Pokemon count"
+          onRetry={refetchTotalCount}
+          type="warning"
+        />
+      )}
 
-      <FilterPanel
+      <SearchSection
         filters={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
+        onFilterChange={setFilter}
+        onClearFilters={clearFilters}
+        isFetching={isPokemonFetching}
       />
 
-      <PaginationControls
-        currentPage={page}
-        totalPages={totalPages}
-        limit={limit}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onLimitChange={handleLimitChange}
-      />
+      {pokemonError ? (
+        <ErrorDisplay
+          message={
+            pokemonError instanceof Error
+              ? pokemonError.message
+              : "Failed to load Pokemon data. Please try again."
+          }
+          onRetry={refetchPokemon}
+          type="error"
+        />
+      ) : isPokemonLoading && !pokemonData ? (
+        <Loader message="Loading Pokemon..." size="medium" />
+      ) : allPokemons.length === 0 ? (
+        <MessageBox
+          title="No Pokemon found"
+          description="Try adjusting your search or filters"
+          variant="empty"
+        />
+      ) : (
+        <PokemonGrid
+          pokemons={allPokemons}
+          caughtPokemonIds={caughtPokemonIds}
+          currentPage={page}
+          totalPages={totalPages}
+          limit={limit}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          onLimitChange={setLimit}
+          onToggle={handleToggle}
+          onPokemonClick={handlePokemonClick}
+        />
+      )}
 
-      <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-        {allPokemons.map((pokemon) => (
-          <PokemonCard
-            key={pokemon.id}
-            pokemonId={pokemon.id}
-            name={pokemon.name}
-            type={pokemon.types}
-            isCaught={caughtPokemonIds.has(pokemon.id)}
-            onToggle={handleToggle}
-          />
-        ))}
-      </div>
+      {selectedPokemonId && (
+        <PokemonDetailModal
+          pokemonId={selectedPokemonId}
+          isCaught={caughtPokemonIds.has(selectedPokemonId)}
+          onClose={handleModalClose}
+        />
+      )}
 
-      <PaginationControls
-        currentPage={page}
-        totalPages={totalPages}
-        limit={limit}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onLimitChange={handleLimitChange}
+      <PokemonStats
+        caughtCount={caughtPokemonIds.size}
+        totalCount={totalPokemon}
+        isLoadingCaught={isCollectionLoading}
+        isLoadingTotal={isTotalCountLoading}
       />
     </div>
   );

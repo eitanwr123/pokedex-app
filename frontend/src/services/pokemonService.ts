@@ -12,8 +12,12 @@ export async function getAllPokemon(
   return response.data;
 }
 
-export async function getPokemonById(id: number): Promise<Pokemon> {
-  const response = await apiClient.get<Pokemon>(`/api/pokemon/${id}`);
+export async function getPokemonById(
+  id: number
+): Promise<{ pokemon: Pokemon }> {
+  const response = await apiClient.get<{ pokemon: Pokemon }>(
+    `/api/pokemon/${id}`
+  );
   return response.data;
 }
 
@@ -28,11 +32,16 @@ export async function getUserCollection(params?: {
   return response.data;
 }
 
-export async function toggleCatchPokemon(
+export async function togglePokemon(
   pokemonId: number
 ): Promise<{ message: UserPokemon }> {
   const response = await apiClient.post<{ message: UserPokemon }>(
     `/api/me/collection/${pokemonId}/toggle`
   );
+  return response.data;
+}
+
+export async function getTotalPokemonCount(): Promise<{ total: number }> {
+  const response = await apiClient.get<{ total: number }>("/api/pokemon/count");
   return response.data;
 }

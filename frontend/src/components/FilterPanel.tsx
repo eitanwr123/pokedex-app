@@ -4,7 +4,10 @@ interface FilterPanelProps {
     evolutionTier: string;
     description: string;
   };
-  onFilterChange: (filterName: string, value: string) => void;
+  onFilterChange: (
+    filterName: "type" | "evolutionTier" | "description",
+    value: string
+  ) => void;
   onClearFilters: () => void;
 }
 

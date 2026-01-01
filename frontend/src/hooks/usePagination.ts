@@ -15,8 +15,8 @@ export function usePagination(
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
 
-  const handleNext = () => setPage(page + 1);
-  const handlePrev = () => setPage(page - 1);
+  const handleNext = () => setPage((p) => p + 1);
+  const handlePrev = () => setPage((p) => p - 1);
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
     setPage(1);
