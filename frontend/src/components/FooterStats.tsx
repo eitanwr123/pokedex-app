@@ -1,16 +1,18 @@
-interface PokemonStatsProps {
+import React from 'react';
+
+interface FooterStatsProps {
   caughtCount: number;
   totalCount: number;
   isLoadingCaught: boolean;
   isLoadingTotal: boolean;
 }
 
-export function PokemonStats({
+export const FooterStats = React.memo<FooterStatsProps>(({
   caughtCount,
   totalCount,
   isLoadingCaught,
   isLoadingTotal,
-}: PokemonStatsProps) {
+}) => {
   const percentage = totalCount > 0 ? (caughtCount / totalCount) * 100 : 0;
 
   return (
@@ -75,4 +77,6 @@ export function PokemonStats({
       </div>
     </div>
   );
-}
+});
+
+FooterStats.displayName = 'FooterStats';

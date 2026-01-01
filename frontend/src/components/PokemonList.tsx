@@ -1,8 +1,9 @@
+import React from 'react';
 import PokemonCard from "./PokemonCard";
 import PaginationControls from "./PaginationControls";
 import type { Pokemon } from "../types";
 
-interface PokemonGridProps {
+interface PokemonListProps {
   pokemons: Pokemon[];
   caughtPokemonIds: Set<number>;
   currentPage: number;
@@ -15,7 +16,7 @@ interface PokemonGridProps {
   onPokemonClick: (pokemonId: number) => void;
 }
 
-export function PokemonGrid({
+export const PokemonList = React.memo<PokemonListProps>(({
   pokemons,
   caughtPokemonIds,
   currentPage,
@@ -26,7 +27,7 @@ export function PokemonGrid({
   onLimitChange,
   onToggle,
   onPokemonClick,
-}: PokemonGridProps) {
+}) => {
   return (
     <>
       <PaginationControls
@@ -62,4 +63,6 @@ export function PokemonGrid({
       />
     </>
   );
-}
+});
+
+PokemonList.displayName = 'PokemonList';

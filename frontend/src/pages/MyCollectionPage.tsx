@@ -1,12 +1,16 @@
+import React, { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getUserCollection } from "../services/pokemonService";
-import PokemonCard from "../components/PokemonCard";
-import PaginationControls from "../components/PaginationControls";
 import { usePagination } from "../hooks/usePagination";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import type { PaginatedResponse, Pokemon } from "../types";
-import { useState } from "react";
 import { PokemonDetailModal } from "../components/PokemonDetailModal";
+import { PageLayout } from "../components/PageLayout";
+import { FiltersBar } from "../components/FiltersBar";
+import { MainContent } from "../components/MainContent";
+import { FooterStats } from "../components/FooterStats";
+import { PokemonList } from "../components/PokemonList";
+import { MessageBox } from "../components/MessageBox";
 
 export default function MyCollectionPage() {
   const { page, limit, handleNext, handlePrev, handleLimitChange } =
@@ -25,62 +29,68 @@ export default function MyCollectionPage() {
     queryFn: () => getUserCollection({ page, limit }),
   });
 
-  if (isLoading) return <div>Loading your collection...</div>;
-  if (error) return <div>Error loading collection!</div>;
-  if (!collectionData) throw new Error("No collection data found");
+  const handlePokemonClick = useCallback((pokemonId: number) => {
+    setSelectedPokemonId(pokemonId);
+  }, []);
 
-  const myPokemon = collectionData.data;
-  const totalPages = collectionData.pagination.totalPages;
-  const totalPokemon = collectionData.pagination.total;
+  const handleModalClose = useCallback(() => {
+    setSelectedPokemonId(null);
+  }, []);
+
+  const myPokemon = collectionData?.data || [];
+  const totalPages = collectionData?.pagination.totalPages || 1;
+  const totalPokemon = collectionData?.pagination.total || 0;
+  const caughtPokemonIds = new Set<number>(myPokemon.map((p) => p.id));
 
   return (
     <div>
-      <h1>My Collection</h1>
-
-      {totalPokemon === 0 ? (
-        <p>You haven't caught any Pokemon yet. Go catch some!</p>
-      ) : (
-        <>
-          <p>You have caught {totalPokemon} Pokemon!</p>
-
-          <PaginationControls
-            currentPage={page}
-            totalPages={totalPages}
-            limit={limit}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onLimitChange={handleLimitChange}
-          />
-
-          <div className="container mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-            {myPokemon.map((pokemon) => (
-              <PokemonCard
-                key={pokemon.id}
-                pokemonId={pokemon.id}
-                name={pokemon.name}
-                type={pokemon.types}
-                isCaught={true}
-                onToggle={handleToggle}
-                onClick={() => setSelectedPokemonId(pokemon.id)}
-              />
-            ))}
+      <PageLayout>
+        <FiltersBar>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-800">My Collection</h1>
+            <p className="text-gray-600 mt-2">View all your caught Pokemon</p>
           </div>
+        </FiltersBar>
 
-          <PaginationControls
-            currentPage={page}
-            totalPages={totalPages}
-            limit={limit}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onLimitChange={handleLimitChange}
-          />
-        </>
-      )}
+        <MainContent
+          isLoading={isLoading}
+          error={error instanceof Error ? error : null}
+        >
+          {totalPokemon === 0 ? (
+            <MessageBox
+              title="No Pokemon in your collection"
+              description="You haven't caught any Pokemon yet. Go catch some!"
+              variant="empty"
+            />
+          ) : (
+            <PokemonList
+              pokemons={myPokemon}
+              caughtPokemonIds={caughtPokemonIds}
+              currentPage={page}
+              totalPages={totalPages}
+              limit={limit}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              onLimitChange={handleLimitChange}
+              onToggle={handleToggle}
+              onPokemonClick={handlePokemonClick}
+            />
+          )}
+        </MainContent>
+
+        <FooterStats
+          caughtCount={totalPokemon}
+          totalCount={totalPokemon}
+          isLoadingCaught={isLoading}
+          isLoadingTotal={false}
+        />
+      </PageLayout>
+
       {selectedPokemonId && (
         <PokemonDetailModal
           pokemonId={selectedPokemonId}
           isCaught={true}
-          onClose={() => setSelectedPokemonId(null)}
+          onClose={handleModalClose}
         />
       )}
     </div>
