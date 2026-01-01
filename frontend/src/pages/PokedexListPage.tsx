@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllPokemon, getUserCollection } from "../services/pokemonService";
+import { getAllPokemon, getUserCollection, getTotalPokemonCount } from "../services/pokemonService";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import { useDebounce } from "../hooks/useDebounce";
 import { useUrlFilters } from "../hooks/useUrlFilters";
@@ -82,6 +82,16 @@ export default function PokedexListPage() {
     placeholderData: (oldData) => oldData,
   });
 
+  const {
+    data: totalCountData,
+    isLoading: isTotalCountLoading,
+    error: totalCountError,
+    refetch: refetchTotalCount,
+  } = useQuery<{ total: number }>({
+    queryKey: ["totalPokemonCount"],
+    queryFn: getTotalPokemonCount,
+  });
+
   const allPokemons = pokemonData?.data || [];
 
   const caughtPokemonIds = collectionData
@@ -89,7 +99,7 @@ export default function PokedexListPage() {
     : new Set<number>();
 
   const totalPages = pokemonData?.pagination.totalPages || 1;
-  const totalPokemon = pokemonData?.pagination.total || 0;
+  const totalPokemon = totalCountData?.total || 0;
 
   return (
     <div>
@@ -99,6 +109,14 @@ export default function PokedexListPage() {
         <ErrorDisplay
           message="Warning: Could not load your collection data"
           onRetry={refetchCollection}
+          type="warning"
+        />
+      )}
+
+      {totalCountError && (
+        <ErrorDisplay
+          message="Warning: Could not load total Pokemon count"
+          onRetry={refetchTotalCount}
           type="warning"
         />
       )}
@@ -155,7 +173,7 @@ export default function PokedexListPage() {
         caughtCount={caughtPokemonIds.size}
         totalCount={totalPokemon}
         isLoadingCaught={isCollectionLoading}
-        isLoadingTotal={isPokemonLoading && !pokemonData}
+        isLoadingTotal={isTotalCountLoading}
       />
     </div>
   );

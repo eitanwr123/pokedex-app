@@ -40,3 +40,8 @@ export async function togglePokemon(
   );
   return response.data;
 }
+
+export async function getTotalPokemonCount(): Promise<{ total: number }> {
+  const response = await apiClient.get<{ total: number }>("/api/pokemon/count");
+  return response.data;
+}
