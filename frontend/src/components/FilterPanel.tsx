@@ -1,16 +1,17 @@
-import { memo } from "react";
-
 interface FilterPanelProps {
   filters: {
     type: string;
     evolutionTier: string;
     description: string;
   };
-  onFilterChange: (filterName: string, value: string) => void;
+  onFilterChange: (
+    filterName: "type" | "evolutionTier" | "description",
+    value: string
+  ) => void;
   onClearFilters: () => void;
 }
 
-export const FilterPanel = memo(function FilterPanel({
+export function FilterPanel({
   filters,
   onFilterChange,
   onClearFilters,
@@ -154,4 +155,4 @@ export const FilterPanel = memo(function FilterPanel({
       )}
     </div>
   );
-});
+}

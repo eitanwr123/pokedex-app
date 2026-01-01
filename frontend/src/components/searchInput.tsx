@@ -1,4 +1,4 @@
-import { memo, type ChangeEvent } from "react";
+import { type ChangeEvent } from "react";
 
 interface SearchInputProps {
   value: string;
@@ -6,7 +6,7 @@ interface SearchInputProps {
   placeholder?: string;
 }
 
-export const SearchInput = memo(function SearchInput({
+export function SearchInput({
   value,
   onChange,
   placeholder = "Search...",
@@ -26,4 +26,4 @@ export const SearchInput = memo(function SearchInput({
       />
     </div>
   );
-});
+}

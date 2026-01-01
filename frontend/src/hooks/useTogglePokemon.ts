@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { togglePokemon } from "../services/pokemonService";
-import { useCallback } from "react";
 
 export function useTogglePokemon() {
   const queryClient = useQueryClient();
@@ -23,12 +22,9 @@ export function useTogglePokemon() {
     },
   });
 
-  const handleToggle = useCallback(
-    (pokemonId: number) => {
-      toggleMutation.mutate(pokemonId);
-    },
-    [toggleMutation.mutate]
-  );
+  const handleToggle = (pokemonId: number) => {
+    toggleMutation.mutate(pokemonId);
+  };
 
   return {
     handleToggle,

@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode, useCallback } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PublicUser, LoginRequest } from "../types";
 import { login as loginService } from "../services/auth";
@@ -66,19 +66,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const login = useCallback(
-    async (credentials: LoginRequest) => {
-      await loginMutation.mutateAsync(credentials);
-    },
-    [loginMutation]
-  );
+  const login = async (credentials: LoginRequest) => {
+    await loginMutation.mutateAsync(credentials);
+  };
 
-  const logout = useCallback(() => {
+  const logout = () => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user");
     queryClient.setQueryData(AUTH_QUERY_KEY, null);
     queryClient.clear();
-  }, [queryClient]);
+  };
 
   const isAuthenticated = !!user;
 

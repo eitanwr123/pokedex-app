@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
 interface UsePaginationReturn {
   page: number;
@@ -15,12 +15,12 @@ export function usePagination(
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
 
-  const handleNext = useCallback(() => setPage((p) => p + 1), []);
-  const handlePrev = useCallback(() => setPage((p) => p - 1), []);
-  const handleLimitChange = useCallback((newLimit: number) => {
+  const handleNext = () => setPage((p) => p + 1);
+  const handlePrev = () => setPage((p) => p - 1);
+  const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
     setPage(1);
-  }, []);
+  };
 
   return {
     page,
