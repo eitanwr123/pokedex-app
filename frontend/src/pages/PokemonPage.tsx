@@ -1,4 +1,3 @@
-import React, { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getAllPokemon,
@@ -18,6 +17,7 @@ import { FiltersBar } from "../components/FiltersBar";
 import { MainContent } from "../components/MainContent";
 import { MessageBox } from "../components/MessageBox";
 import { SearchInput } from "../components/searchInput";
+import { useCallback } from "react";
 
 export default function PokemonPage() {
   const {
