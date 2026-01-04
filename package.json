@@ -1,0 +1,14 @@
+{
+  "name": "pokedex-app",
+  "version": "1.0.0",
+  "description": "Pokedex application with frontend and backend",
+  "scripts": {
+    "dev": "concurrently \"docker compose up\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "dev:db": "docker compose up",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

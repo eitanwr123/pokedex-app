@@ -1,8 +1,9 @@
 import { Pokemon } from "../db/schema";
 import { PokemonRepositoryImpl } from "../repositories/PokemonRepositoryImpl";
+import { PokemonQuery } from "../schemas/filterSchema";
 import { PaginatedResponse, PaginationParams } from "../schemas/pagination";
 
-export interface UserCollectionQuery extends PaginationParams {
+export interface UserCollectionQuery extends PokemonQuery {
   userId: number;
 }
 
@@ -16,7 +17,11 @@ export const getUserCollectionService = async (
   const { pokemon, total } = await pokemonRepository.findPokemonByUserId(
     query.userId,
     offset,
-    query.limit
+    query.limit,
+    query.type,
+    query.name,
+    query.evolutionTier,
+    query.description
   );
 
   const totalPages = Math.ceil(total / query.limit);

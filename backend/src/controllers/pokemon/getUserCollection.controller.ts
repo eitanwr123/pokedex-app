@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middleware/auth";
 import { getUserCollectionService } from "../../services/getUserCollectionService";
 import { paginationSchema } from "../../schemas/pagination";
 import { ZodError } from "zod";
+import { pokemonQuerySchema } from "../../schemas/filterSchema";
 
 export const getUserCollection = async (req: AuthRequest, res: Response) => {
   try {
@@ -16,7 +17,7 @@ export const getUserCollection = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const validatedParams = paginationSchema.parse(req.query);
+    const validatedParams = pokemonQuerySchema.parse(req.query);
 
     const result = await getUserCollectionService({
       ...validatedParams,

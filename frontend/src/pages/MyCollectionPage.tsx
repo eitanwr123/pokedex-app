@@ -1,7 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getUserCollection } from "../services/pokemonService";
-import { usePagination } from "../hooks/usePagination";
+import {
+  getTotalPokemonCount,
+  getUserCollection,
+} from "../services/pokemonService";
 import { useTogglePokemon } from "../hooks/useTogglePokemon";
 import type { PaginatedResponse, Pokemon } from "../types";
 import { PokemonDetailModal } from "../components/PokemonDetailModal";
@@ -11,23 +13,71 @@ import { MainContent } from "../components/MainContent";
 import { FooterStats } from "../components/FooterStats";
 import { PokemonList } from "../components/PokemonList";
 import { MessageBox } from "../components/MessageBox";
+import { SearchInput } from "../components/searchInput";
+import { useUrlFilters } from "../hooks/useUrlFilters";
+import { Filters } from "../components/Filters";
+import { useDebounce } from "../hooks/useDebounce";
 
 export default function MyCollectionPage() {
-  const { page, limit, handleNext, handlePrev, handleLimitChange } =
-    usePagination();
   const { handleToggle } = useTogglePokemon();
-  const [selectedPokemonId, setSelectedPokemonId] = useState<number | null>(
-    null
-  );
+
+  const {
+    filters,
+    page,
+    limit,
+    selectedPokemonId,
+    setFilter,
+    clearFilters,
+    setLimit,
+    handleNext,
+    handlePrev,
+    setSelectedPokemonId,
+  } = useUrlFilters();
+
+  const debouncedName = useDebounce(filters.name, 500);
+  const debouncedDescription = useDebounce(filters.description, 500);
+
+  const paginationParam = {
+    page,
+    limit,
+    ...(debouncedName && { name: debouncedName }),
+    ...(filters.type && { type: filters.type }),
+    ...(filters.evolutionTier && {
+      evolutionTier: Number(filters.evolutionTier),
+    }),
+    ...(debouncedDescription && { description: debouncedDescription }),
+  };
 
   const {
     data: collectionData,
-    isLoading,
+    isLoading: isCollectionLoading,
     error,
   } = useQuery<PaginatedResponse<Pokemon>>({
-    queryKey: ["collection", page, limit],
-    queryFn: () => getUserCollection({ page, limit }),
+    queryKey: [
+      "collection",
+      page,
+      limit,
+      debouncedName,
+      filters.type,
+      filters.evolutionTier,
+      debouncedDescription,
+    ],
+    queryFn: () => getUserCollection(paginationParam),
   });
+
+  const handleNameChange = useCallback(
+    (value: string) => {
+      setFilter("name", value);
+    },
+    [setFilter]
+  );
+
+  const handleFilterChange = useCallback(
+    (filterName: "type" | "evolutionTier" | "description", value: string) => {
+      setFilter(filterName, value);
+    },
+    [setFilter]
+  );
 
   const handlePokemonClick = useCallback((pokemonId: number) => {
     setSelectedPokemonId(pokemonId);
@@ -36,6 +86,17 @@ export default function MyCollectionPage() {
   const handleModalClose = useCallback(() => {
     setSelectedPokemonId(null);
   }, []);
+
+  const {
+    data: totalCountData,
+    isLoading: isTotalCountLoading,
+    error: totalCountError,
+  } = useQuery<{ total: number }>({
+    queryKey: ["totalPokemonCount"],
+    queryFn: getTotalPokemonCount,
+  });
+
+  const totalPokemonCount = totalCountData?.total || 0;
 
   const myPokemon = collectionData?.data || [];
   const totalPages = collectionData?.pagination.totalPages || 1;
@@ -46,14 +107,24 @@ export default function MyCollectionPage() {
     <div>
       <PageLayout>
         <FiltersBar>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-800">My Collection</h1>
-            <p className="text-gray-600 mt-2">View all your caught Pokemon</p>
-          </div>
+          <SearchInput
+            value={filters.name}
+            onChange={handleNameChange}
+            placeholder="Search in your collection..."
+          />
+          <Filters
+            filters={{
+              type: filters.type,
+              evolutionTier: filters.evolutionTier,
+              description: filters.description,
+            }}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearFilters}
+          />
         </FiltersBar>
 
         <MainContent
-          isLoading={isLoading}
+          isLoading={isCollectionLoading}
           error={error instanceof Error ? error : null}
         >
           {totalPokemon === 0 ? (
@@ -71,7 +142,7 @@ export default function MyCollectionPage() {
               limit={limit}
               onNext={handleNext}
               onPrev={handlePrev}
-              onLimitChange={handleLimitChange}
+              onLimitChange={setLimit}
               onToggle={handleToggle}
               onPokemonClick={handlePokemonClick}
             />
@@ -80,9 +151,9 @@ export default function MyCollectionPage() {
 
         <FooterStats
           caughtCount={totalPokemon}
-          totalCount={totalPokemon}
-          isLoadingCaught={isLoading}
-          isLoadingTotal={false}
+          totalCount={totalPokemonCount}
+          isLoadingCaught={isCollectionLoading}
+          isLoadingTotal={isTotalCountLoading || isCollectionLoading}
         />
       </PageLayout>
 

@@ -90,14 +90,25 @@ export class PokemonRepositoryImpl {
   async findPokemonByUserId(
     userId: number,
     offset: number,
-    limit: number
+    limit: number,
+    type?: string,
+    name?: string,
+    evolutionTier?: number,
+    description?: string
   ): Promise<{ pokemon: Pokemon[]; total: number }> {
+    const whereClause = this.buildWhereClause(
+      type,
+      name,
+      evolutionTier,
+      description
+    );
+
     const [pokemonList, totalCount] = await Promise.all([
       db
         .select()
         .from(userPokemon)
         .innerJoin(pokemon, eq(userPokemon.pokemonId, pokemon.id))
-        .where(eq(userPokemon.userId, userId))
+        .where(and(eq(userPokemon.userId, userId), whereClause))
         .limit(limit)
         .offset(offset),
       db
