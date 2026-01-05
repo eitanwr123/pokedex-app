@@ -2,8 +2,9 @@ import { db } from "../db/client";
 import { pokemon, userPokemon } from "../db/schema";
 import { Pokemon } from "../db/schema";
 import { and, count, eq, ilike, SQL, sql } from "drizzle-orm";
+import { IPokemonRepository } from "./interfaces/IPokemonRepository";
 
-export class PokemonRepositoryImpl {
+export class PokemonRepositoryImpl implements IPokemonRepository {
   async findAllPokemon(
     offset: number,
     limit: number,
@@ -124,7 +125,7 @@ export class PokemonRepositoryImpl {
   }
 
   // return all the types as unique
-  async findAllTypes(): Promise<string[]> {
+  async getAllUniqueTypes(): Promise<string[]> {
     const result = await db.select().from(pokemon);
 
     const typesSet = new Set<string>();

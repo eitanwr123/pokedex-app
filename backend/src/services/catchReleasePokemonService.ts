@@ -1,7 +1,7 @@
 import { NewUserPokemon } from "../db/schema";
-import { userPokemonRepositorylmpl } from "../repositories/userPokemonRepositorylmpl";
 import { getAllPreEvolutions } from "../utils/getAllPreEvolutions";
 import { PokemonRepositoryImpl } from "../repositories/PokemonRepositoryImpl";
+import { UserPokemonRepositoryImpl } from "../repositories/userPokemonRepositorylmpl";
 
 export async function catchReleasePokemonService(
   userId: number,
@@ -11,7 +11,7 @@ export async function catchReleasePokemonService(
   let result: NewUserPokemon[];
 
   const pokemonRepo = new PokemonRepositoryImpl();
-  const userPokemonRepository = new userPokemonRepositorylmpl();
+  const userPokemonRepository = new UserPokemonRepositoryImpl();
 
   const { pokemon: userCollection } = await pokemonRepo.findPokemonByUserId(
     userId,

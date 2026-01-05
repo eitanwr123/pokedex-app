@@ -1,8 +1,9 @@
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
 import { NewUserPokemon, UserPokemon, userPokemon } from "../db/schema";
+import { IUserPokemonRepository } from "./interfaces/IUserPokemonRepository";
 
-export class userPokemonRepositorylmpl {
+export class UserPokemonRepositoryImpl implements IUserPokemonRepository {
   async addPokemonToUserCollection(
     input: NewUserPokemon | NewUserPokemon[]
   ): Promise<NewUserPokemon[]> {

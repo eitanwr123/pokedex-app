@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
 import { users, User, NewUser } from "../db/schema";
+import { IUserRepository } from "./interfaces/IUserRepository";
 
-export class UserRepositoryImpl {
-  //implement function checks if user exist by email
+export class UserRepositoryImpl implements IUserRepository {
   async findUserByEmail(email: string): Promise<User | null> {
     const result = await db
       .select()
