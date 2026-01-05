@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { users, User } from "../db/schema";
+import { users, User, NewUser } from "../db/schema";
 
 export class UserRepositoryImpl {
   //implement function checks if user exist by email
@@ -14,17 +14,13 @@ export class UserRepositoryImpl {
     return result.length > 0 ? result[0] : null;
   }
 
-  async createUser(
-    email: string,
-    passwordHash: string,
-    username: string
-  ): Promise<User> {
+  async createUser(newUser: NewUser): Promise<User> {
     const result = await db
       .insert(users)
       .values({
-        email,
-        passwordHash,
-        username,
+        email: newUser.email,
+        passwordHash: newUser.passwordHash,
+        username: newUser.username,
       })
       .returning();
 
