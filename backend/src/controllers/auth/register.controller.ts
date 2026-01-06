@@ -1,8 +1,6 @@
 import { ZodError } from "zod";
 import { registrationSchema } from "../../schemas/registration";
-import { AuthService } from "../../services/authService";
 import { Request, Response } from "express";
-import { UserRepositoryImpl } from "../../repositories/UserRepositoryImpl";
 import { appContainer } from "../../container";
 
 export const register = async (req: Request, res: Response) => {
