@@ -3,16 +3,14 @@ import { registrationSchema } from "../../schemas/registration";
 import { AuthService } from "../../services/authService";
 import { Request, Response } from "express";
 import { UserRepositoryImpl } from "../../repositories/UserRepositoryImpl";
+import { appContainer } from "../../container";
 
 export const register = async (req: Request, res: Response) => {
   try {
     const validatedData = registrationSchema.parse(req.body);
 
-    //create dependency instances
-    const userRepository = new UserRepositoryImpl();
-    const authService = new AuthService(userRepository);
+    const authService = appContainer.getAuthService();
 
-    //call service method
     const result = await authService.registerUser(validatedData);
 
     res.status(201).json({

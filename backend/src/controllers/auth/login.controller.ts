@@ -1,18 +1,14 @@
 import { ZodError } from "zod";
 import { loginSchema } from "../../schemas/login";
 import { Request, Response } from "express";
-import { UserRepositoryImpl } from "../../repositories/UserRepositoryImpl";
-import { AuthService } from "../../services/authService";
+import { appContainer } from "../../container";
 
 export const login = async (req: Request, res: Response) => {
   try {
     const validatedData = loginSchema.parse(req.body);
 
-    //create dependency instances
-    const userRepository = new UserRepositoryImpl();
-    const authService = new AuthService(userRepository);
+    const authService = appContainer.getAuthService();
 
-    //call service method
     const result = await authService.loginUser(validatedData);
 
     res.status(200).json({
