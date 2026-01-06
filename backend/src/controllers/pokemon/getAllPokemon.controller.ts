@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
-import { getAllPokemonService } from "../../services/pokemonService";
 import { ZodError } from "zod";
 import { pokemonQuerySchema } from "../../schemas/filterSchema";
+import { appContainer } from "../../container";
 
 export const getAllPokemon = async (req: Request, res: Response) => {
   try {
     const validatedParams = pokemonQuerySchema.parse(req.query);
 
-    const result = await getAllPokemonService(validatedParams);
+    const PokemonService = appContainer.getPokemonService();
+
+    const result = await PokemonService.getAllPokemon(validatedParams);
 
     res.status(200).json(result);
   } catch (error) {

@@ -1,9 +1,10 @@
+import { appContainer } from "../../container";
 import { AuthRequest } from "../../middleware/auth";
-import { getTotalPokemonCountService } from "../../services/getTotalPokemonCountService";
 
 export const getTotalPokemonCount = async (req: AuthRequest, res: any) => {
   try {
-    const totalCount = await getTotalPokemonCountService();
+    const PokemonService = appContainer.getPokemonService();
+    const totalCount = await PokemonService.getTotalPokemonCount();
     res.status(200).json({ total: totalCount });
   } catch (error) {
     res.status(500).json({

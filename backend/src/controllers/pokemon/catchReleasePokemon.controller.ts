@@ -2,7 +2,7 @@ import { z } from "zod";
 import { AuthRequest } from "../../middleware/auth";
 import { Response } from "express";
 import { catchReleasePokemonParamSchema } from "../../schemas/params";
-import { catchReleasePokemonService } from "../../services/catchReleasePokemonService";
+import { appContainer } from "../../container";
 
 export const catchReleasePokemonController = async (
   req: AuthRequest,
@@ -20,8 +20,12 @@ export const catchReleasePokemonController = async (
       });
       return;
     }
+    const UserPokemonService = appContainer.getUserPokemonService();
 
-    const result = await catchReleasePokemonService(userId, pokemonId);
+    const result = await UserPokemonService.catchOrReleasePokemon(
+      userId,
+      pokemonId
+    );
     if (!result) {
       res.status(404).json({
         error: "PokemonNotFound",

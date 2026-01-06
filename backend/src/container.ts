@@ -5,12 +5,16 @@ import { PokemonRepositoryImpl } from "./repositories/PokemonRepositoryImpl";
 import { UserPokemonRepositoryImpl } from "./repositories/userPokemonRepositorylmpl";
 import { UserRepositoryImpl } from "./repositories/UserRepositoryImpl";
 import { AuthService } from "./services/authService";
+import { PokemonService } from "./services/pokemonService";
+import { UserPokemonService } from "./services/userPokemonService";
 
 export class Container {
   private _userRepository?: IUserRepository;
   private _pokemonRepository?: IPokemonRepository;
   private _userPokemonRepository?: IUserPokemonRepository;
   private _authService?: AuthService;
+  private _pokemonService?: PokemonService;
+  private _userPokemonService?: UserPokemonService;
 
   getUserRepository(): IUserRepository {
     if (!this._userRepository) {
@@ -38,6 +42,23 @@ export class Container {
       this._authService = new AuthService(this.getUserRepository());
     }
     return this._authService;
+  }
+
+  getPokemonService(): PokemonService {
+    if (!this._pokemonService) {
+      this._pokemonService = new PokemonService(this.getPokemonRepository());
+    }
+    return this._pokemonService;
+  }
+
+  getUserPokemonService(): UserPokemonService {
+    if (!this._userPokemonService) {
+      this._userPokemonService = new UserPokemonService(
+        this.getPokemonRepository(),
+        this.getUserPokemonRepository()
+      );
+    }
+    return this._userPokemonService;
   }
 }
 
