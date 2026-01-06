@@ -5,12 +5,14 @@ import { RegistrationData } from "../schemas/registration";
 import { PublicUser } from "../types/user";
 
 export class AuthService {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private _userRepository: IUserRepository) {}
   async registerUser(
     regData: RegistrationData
   ): Promise<{ publicUser: PublicUser }> {
     //check if user exists in database
-    const userExists = await this.userRepository.findUserByEmail(regData.email);
+    const userExists = await this._userRepository.findUserByEmail(
+      regData.email
+    );
     if (userExists) {
       throw new Error("User already exists");
     }
@@ -24,7 +26,7 @@ export class AuthService {
       passwordHash,
       username: regData.username,
     };
-    const userData = await this.userRepository.createUser(newUser);
+    const userData = await this._userRepository.createUser(newUser);
 
     return {
       publicUser: {
@@ -39,7 +41,7 @@ export class AuthService {
     credentials: LoginData
   ): Promise<{ id: number; email: string; username: string; token: string }> {
     // Find user by email
-    const user = await this.userRepository.findUserByEmail(credentials.email);
+    const user = await this._userRepository.findUserByEmail(credentials.email);
     if (!user) {
       throw new Error("Invalid credentials");
     }
