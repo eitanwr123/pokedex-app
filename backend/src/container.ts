@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { IPokemonRepository } from "./repositories/interfaces/IPokemonRepository";
 import { IUserPokemonRepository } from "./repositories/interfaces/IUserPokemonRepository";
 import { IUserRepository } from "./repositories/interfaces/IUserRepository";
@@ -5,6 +6,7 @@ import { PokemonRepositoryImpl } from "./repositories/PokemonRepositoryImpl";
 import { UserPokemonRepositoryImpl } from "./repositories/userPokemonRepositorylmpl";
 import { UserRepositoryImpl } from "./repositories/UserRepositoryImpl";
 import { AuthService } from "./services/authService";
+import { ChatService } from "./services/chatService";
 import { PokemonService } from "./services/pokemonService";
 import { UserPokemonService } from "./services/userPokemonService";
 
@@ -15,6 +17,7 @@ export class Container {
   private _authService?: AuthService;
   private _pokemonService?: PokemonService;
   private _userPokemonService?: UserPokemonService;
+  private _chatService?: ChatService;
 
   getUserRepository(): IUserRepository {
     if (!this._userRepository) {
@@ -59,6 +62,22 @@ export class Container {
       );
     }
     return this._userPokemonService;
+  }
+
+  getChatService(): ChatService {
+    if (!this._chatService) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not set in environment variables");
+      }
+
+      // Create GoogleGenerativeAI instance and configure model
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+      this._chatService = new ChatService(model);
+    }
+    return this._chatService;
   }
 }
 
