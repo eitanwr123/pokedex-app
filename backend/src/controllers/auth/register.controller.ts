@@ -1,13 +1,15 @@
 import { ZodError } from "zod";
 import { registrationSchema } from "../../schemas/registration";
-import { registerUser } from "../../services/authService";
 import { Request, Response } from "express";
+import { appContainer } from "../../container";
 
 export const register = async (req: Request, res: Response) => {
   try {
     const validatedData = registrationSchema.parse(req.body);
 
-    const result = await registerUser(validatedData);
+    const authService = appContainer.getAuthService();
+
+    const result = await authService.registerUser(validatedData);
 
     res.status(201).json({
       message: "User registered successfully",

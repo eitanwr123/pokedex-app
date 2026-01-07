@@ -1,13 +1,15 @@
 import { ZodError } from "zod";
 import { loginSchema } from "../../schemas/login";
-import { loginUser } from "../../services/authService";
 import { Request, Response } from "express";
+import { appContainer } from "../../container";
 
 export const login = async (req: Request, res: Response) => {
   try {
     const validatedData = loginSchema.parse(req.body);
 
-    const result = await loginUser(validatedData);
+    const authService = appContainer.getAuthService();
+
+    const result = await authService.loginUser(validatedData);
 
     res.status(200).json({
       message: "Login successful",

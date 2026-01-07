@@ -1,9 +1,10 @@
+import { appContainer } from "../../container";
 import { AuthRequest } from "../../middleware/auth";
-import { getAllTypesService } from "../../services/getAllTypesService";
 
 export const getAllTypes = async (req: AuthRequest, res: any) => {
   try {
-    const result = await getAllTypesService();
+    const PokemonService = appContainer.getPokemonService();
+    const result = await PokemonService.getAllTypes();
     res.status(200).json({ types: result });
   } catch (error) {
     res.status(500).json({

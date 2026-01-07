@@ -1,8 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../../middleware/auth";
-import { getUserCollectionService } from "../../services/getUserCollectionService";
-import { paginationSchema } from "../../schemas/pagination";
 import { ZodError } from "zod";
+import { pokemonQuerySchema } from "../../schemas/filterSchema";
+import { appContainer } from "../../container";
 
 export const getUserCollection = async (req: AuthRequest, res: Response) => {
   try {
@@ -16,9 +16,10 @@ export const getUserCollection = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const validatedParams = paginationSchema.parse(req.query);
+    const validatedParams = pokemonQuerySchema.parse(req.query);
 
-    const result = await getUserCollectionService({
+    const userPokemonService = appContainer.getUserPokemonService();
+    const result = await userPokemonService.getUserCollection({
       ...validatedParams,
       userId,
     });

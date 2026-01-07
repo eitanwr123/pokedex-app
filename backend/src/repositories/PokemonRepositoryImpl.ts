@@ -2,8 +2,9 @@ import { db } from "../db/client";
 import { pokemon, userPokemon } from "../db/schema";
 import { Pokemon } from "../db/schema";
 import { and, count, eq, ilike, SQL, sql } from "drizzle-orm";
+import { IPokemonRepository } from "./interfaces/IPokemonRepository";
 
-export class PokemonRepositoryImpl {
+export class PokemonRepositoryImpl implements IPokemonRepository {
   async findAllPokemon(
     offset: number,
     limit: number,
@@ -90,14 +91,25 @@ export class PokemonRepositoryImpl {
   async findPokemonByUserId(
     userId: number,
     offset: number,
-    limit: number
+    limit: number,
+    type?: string,
+    name?: string,
+    evolutionTier?: number,
+    description?: string
   ): Promise<{ pokemon: Pokemon[]; total: number }> {
+    const whereClause = this.buildWhereClause(
+      type,
+      name,
+      evolutionTier,
+      description
+    );
+
     const [pokemonList, totalCount] = await Promise.all([
       db
         .select()
         .from(userPokemon)
         .innerJoin(pokemon, eq(userPokemon.pokemonId, pokemon.id))
-        .where(eq(userPokemon.userId, userId))
+        .where(and(eq(userPokemon.userId, userId), whereClause))
         .limit(limit)
         .offset(offset),
       db
@@ -113,7 +125,7 @@ export class PokemonRepositoryImpl {
   }
 
   // return all the types as unique
-  async findAllTypes(): Promise<string[]> {
+  async getAllUniqueTypes(): Promise<string[]> {
     const result = await db.select().from(pokemon);
 
     const typesSet = new Set<string>();
