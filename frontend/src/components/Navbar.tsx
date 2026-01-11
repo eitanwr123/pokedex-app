@@ -21,6 +21,12 @@ export default function Navbar() {
             >
               My Collection
             </Link>
+            <Link
+              to="/chat"
+              className="hover:text-blue-200 transition font-medium"
+            >
+              AI Chat
+            </Link>
           </div>
         </div>
       </div>
